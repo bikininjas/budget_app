@@ -1,0 +1,4 @@
+# Ignorer les fichiers de backup (sauf le .gitkeep)
+*.sql.gz
+*.sql
+!.gitkeep
