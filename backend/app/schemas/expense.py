@@ -18,6 +18,7 @@ class ExpenseBase(BaseModel):
     date: date_type
     frequency: Frequency = Frequency.one_time
     split_type: SplitType = SplitType.fifty_fifty
+    is_recurring: bool = False
 
 
 class ExpenseCreate(ExpenseBase):
@@ -38,6 +39,7 @@ class ExpenseUpdate(BaseModel):
     date: date_type | None = None
     frequency: Frequency | None = None
     split_type: SplitType | None = None
+    is_recurring: bool | None = None
     category_id: int | None = None
     account_id: int | None = None
     assigned_to: int | None = None
@@ -54,14 +56,17 @@ class ExpenseResponse(ExpenseBase):
     assigned_to: int
     created_by: int
     project_id: int | None
+    is_recurring: bool
     is_active: bool
     created_at: datetime
     updated_at: datetime
 
     # Nested data
     category_name: str | None = None
+    category_color: str | None = None
     account_name: str | None = None
     assigned_user_name: str | None = None
+    project_name: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -75,6 +80,7 @@ class ExpenseFilter(BaseModel):
     project_id: int | None = None
     frequency: Frequency | None = None
     split_type: SplitType | None = None
+    is_recurring: bool | None = None
     start_date: date_type | None = None
     end_date: date_type | None = None
     min_amount: Decimal | None = None

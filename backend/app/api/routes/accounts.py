@@ -18,11 +18,7 @@ async def list_accounts(
 ) -> list[AccountResponse]:
     """Get accounts visible to current user (personal + joint)."""
     account_service = AccountService(db)
-    accounts = await account_service.get_all(
-        skip=skip,
-        limit=limit,
-        user=current_user
-    )
+    accounts = await account_service.get_all(skip=skip, limit=limit, user=current_user)
     return [AccountResponse.model_validate(acc) for acc in accounts]
 
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2, ChevronLeft, ChevronRight, Receipt } from 'lucide-react';
+import { Pencil, Trash2, ChevronLeft, ChevronRight, Receipt, RefreshCcw } from 'lucide-react';
 import { expensesApi } from '@/lib/api';
 import { Expense } from '@/types';
 import { formatCurrency, formatDateShort, SPLIT_TYPE_LABELS } from '@/lib/utils';
@@ -126,7 +126,12 @@ export function ExpenseList() {
                       </td>
                       <td className="p-4">
                         <div>
-                          <p className="font-medium text-slate-900 dark:text-white">
+                          <p className="font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
+                            {expense.is_recurring && (
+                              <span title="Dépense récurrente">
+                                <RefreshCcw className="w-3.5 h-3.5 text-primary-500" />
+                              </span>
+                            )}
                             {expense.label}
                           </p>
                           {expense.description && (
@@ -201,7 +206,10 @@ export function ExpenseList() {
                 <div key={expense.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-slate-900 dark:text-white truncate">
+                      <p className="font-medium text-slate-900 dark:text-white truncate flex items-center gap-1.5">
+                        {expense.is_recurring && (
+                          <RefreshCcw className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
+                        )}
                         {expense.label}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">

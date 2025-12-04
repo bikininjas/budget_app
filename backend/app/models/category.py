@@ -32,6 +32,9 @@ class Category(Base):
     expenses: Mapped[list["Expense"]] = relationship(  # noqa: F821
         "Expense", back_populates="category"
     )
+    recurring_charges: Mapped[list["RecurringCharge"]] = relationship(  # noqa: F821
+        "RecurringCharge", back_populates="category"
+    )
 
     def __repr__(self) -> str:
         return f"<Category(id={self.id}, name={self.name})>"

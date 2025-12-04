@@ -8,6 +8,8 @@ import {
   FolderKanban,
   Tags,
   Landmark,
+  Calculator,
+  History,
   Settings,
   X,
 } from 'lucide-react';
@@ -15,7 +17,9 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Budget prévisionnel', href: '/budget', icon: Calculator },
   { name: 'Dépenses', href: '/expenses', icon: Receipt },
+  { name: 'Historique', href: '/history', icon: History },
   { name: 'Projets', href: '/projects', icon: FolderKanban },
   { name: 'Catégories', href: '/categories', icon: Tags },
   { name: 'Comptes', href: '/accounts', icon: Landmark },

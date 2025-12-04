@@ -7,6 +7,8 @@ import type {
   CategoryStats,
   MonthlyStats,
   UserBalance,
+  RecurringBudget,
+  MonthlyHistory,
 } from '@/types';
 
 export const expensesApi = {
@@ -44,6 +46,17 @@ export const expensesApi = {
     await api.delete(`/expenses/${id}`);
   },
 
+  // Recurring expenses
+  getRecurring: async (): Promise<Expense[]> => {
+    const response = await api.get<Expense[]>('/expenses/recurring');
+    return response.data;
+  },
+
+  getRecurringBudget: async (): Promise<RecurringBudget> => {
+    const response = await api.get<RecurringBudget>('/expenses/recurring/budget');
+    return response.data;
+  },
+
   getByCategory: async (startDate?: string, endDate?: string): Promise<CategoryStats[]> => {
     const params = new URLSearchParams();
     if (startDate) params.append('start_date', startDate);
@@ -71,6 +84,11 @@ export const expensesApi = {
     if (endDate) params.append('end_date', endDate);
     
     const response = await api.get<UserBalance>('/expenses/stats/balance', { params });
+    return response.data;
+  },
+
+  getMonthlyHistory: async (): Promise<MonthlyHistory[]> => {
+    const response = await api.get<MonthlyHistory[]>('/expenses/stats/history');
     return response.data;
   },
 };

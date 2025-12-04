@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import accounts, auth, categories, expenses, projects, users
+from app.api.routes import accounts, auth, categories, expenses, projects, recurring_charges, users
 from app.core.config import settings
 
 
@@ -48,6 +48,7 @@ def create_application() -> FastAPI:
     app.include_router(accounts.router, prefix="/api")
     app.include_router(expenses.router, prefix="/api")
     app.include_router(projects.router, prefix="/api")
+    app.include_router(recurring_charges.router, prefix="/api")
 
     @app.get("/api/health")
     async def health_check() -> dict:

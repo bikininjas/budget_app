@@ -101,6 +101,7 @@ export interface Expense {
   assigned_to: number;
   created_by: number;
   project_id: number | null;
+  is_recurring: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -122,6 +123,7 @@ export interface ExpenseCreate {
   account_id: number;
   assigned_to: number;
   project_id?: number;
+  is_recurring?: boolean;
 }
 
 export interface ExpenseUpdate {
@@ -136,6 +138,7 @@ export interface ExpenseUpdate {
   assigned_to?: number;
   project_id?: number;
   is_active?: boolean;
+  is_recurring?: boolean;
 }
 
 export interface ExpenseFilters {
@@ -212,4 +215,99 @@ export interface UserBalance {
   user2_paid: number;
   user2_should_pay: number;
   user2_balance: number;
+}
+
+// Recurring Budget types (from expenses marked as recurring)
+export interface RecurringBudgetItem {
+  id: number;
+  label: string;
+  description: string | null;
+  amount: number;
+  frequency: Frequency;
+  monthly_amount: number;
+  category_name: string | null;
+  category_color: string | null;
+}
+
+export interface RecurringBudgetCategory {
+  category: string;
+  total: number;
+}
+
+export interface RecurringBudget {
+  total_monthly: number;
+  items: RecurringBudgetItem[];
+  by_category: RecurringBudgetCategory[];
+}
+
+// Recurring Charges types (planned budget, not actual expenses)
+export type ChargeFrequency = 'monthly' | 'quarterly' | 'annual';
+
+export interface RecurringCharge {
+  id: number;
+  name: string;
+  description: string | null;
+  amount: number;
+  frequency: ChargeFrequency;
+  category_id: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  category_name: string | null;
+  category_color: string | null;
+  category_icon: string | null;
+  monthly_amount: number;
+}
+
+export interface RecurringChargeCreate {
+  name: string;
+  description?: string;
+  amount: number;
+  frequency?: ChargeFrequency;
+  category_id: number;
+}
+
+export interface RecurringChargeUpdate {
+  name?: string;
+  description?: string;
+  amount?: number;
+  frequency?: ChargeFrequency;
+  category_id?: number;
+  is_active?: boolean;
+}
+
+export interface BudgetSummary {
+  total_monthly: number;
+  total_annual: number;
+  charges: RecurringCharge[];
+  by_category: RecurringBudgetCategory[];
+}
+
+// Monthly History types
+export interface MonthlyHistoryCategory {
+  name: string;
+  color: string;
+  icon: string | null;
+  total: number;
+  count: number;
+}
+
+export interface MonthlyHistoryExpense {
+  id: number;
+  label: string;
+  amount: number;
+  date: string;
+  category_name: string | null;
+  category_color: string | null;
+  category_icon: string | null;
+  is_recurring: boolean;
+}
+
+export interface MonthlyHistory {
+  year: number;
+  month: number;
+  total: number;
+  count: number;
+  categories: MonthlyHistoryCategory[];
+  expenses: MonthlyHistoryExpense[];
 }

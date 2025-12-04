@@ -3,6 +3,8 @@ import { ExpenseChart } from '@/components/dashboard/expense-chart';
 import { CategoryPieChart } from '@/components/dashboard/category-pie-chart';
 import { BalanceCard } from '@/components/dashboard/balance-card';
 import { RecentExpenses } from '@/components/dashboard/recent-expenses';
+import { RecurringBudget } from '@/components/dashboard/recurring-budget';
+import { PlannedBudget } from '@/components/dashboard/planned-budget';
 
 export default function DashboardPage() {
   return (
@@ -22,6 +24,14 @@ export default function DashboardPage() {
         <div className="card dark:bg-slate-800 dark:border-slate-700 p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Équilibre Seb / Marie</h2>
           <BalanceCard />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PlannedBudget />
+        <div className="card dark:bg-slate-800 dark:border-slate-700 p-4 sm:p-6">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Dépenses récurrentes payées</h2>
+          <RecurringBudget />
         </div>
       </div>
 

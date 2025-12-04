@@ -25,6 +25,7 @@ class ExpenseService:
                 joinedload(Expense.category),
                 joinedload(Expense.account),
                 joinedload(Expense.assigned_user),
+                joinedload(Expense.project),
             )
             .where(Expense.id == expense_id)
         )
@@ -43,6 +44,7 @@ class ExpenseService:
                 joinedload(Expense.category),
                 joinedload(Expense.account),
                 joinedload(Expense.assigned_user),
+                joinedload(Expense.project),
             )
             .where(Expense.is_active)
         )
@@ -61,6 +63,8 @@ class ExpenseService:
                 conditions.append(Expense.frequency == filters.frequency)
             if filters.split_type:
                 conditions.append(Expense.split_type == filters.split_type)
+            if filters.is_recurring is not None:
+                conditions.append(Expense.is_recurring == filters.is_recurring)
             if filters.start_date:
                 conditions.append(Expense.date >= filters.start_date)
             if filters.end_date:
@@ -214,3 +218,106 @@ class ExpenseService:
             "user2_should_pay": user2_should_pay,
             "user2_balance": user2_should_pay - user2_paid,
         }
+
+    async def get_monthly_history(self) -> list[dict]:
+        """Get expenses grouped by month with details."""
+        from app.models.category import Category
+
+        query = (
+            select(
+                func.extract("year", Expense.date).label("year"),
+                func.extract("month", Expense.date).label("month"),
+                func.sum(Expense.amount).label("total"),
+                func.count(Expense.id).label("count"),
+            )
+            .where(Expense.is_active)
+            .group_by(
+                func.extract("year", Expense.date),
+                func.extract("month", Expense.date),
+            )
+            .order_by(
+                func.extract("year", Expense.date).desc(),
+                func.extract("month", Expense.date).desc(),
+            )
+        )
+
+        result = await self.db.execute(query)
+        months_data = result.all()
+
+        history = []
+        for row in months_data:
+            year = int(row.year)
+            month = int(row.month)
+
+            # Get expenses for this month
+            month_start = date(year, month, 1)
+            if month == 12:
+                month_end = date(year + 1, 1, 1)
+            else:
+                month_end = date(year, month + 1, 1)
+
+            expenses_query = (
+                select(Expense)
+                .options(joinedload(Expense.category))
+                .where(
+                    Expense.is_active,
+                    Expense.date >= month_start,
+                    Expense.date < month_end,
+                )
+                .order_by(Expense.date.desc())
+            )
+            expenses_result = await self.db.execute(expenses_query)
+            expenses = list(expenses_result.scalars().unique().all())
+
+            # Category breakdown for this month
+            category_query = (
+                select(
+                    Category.name,
+                    Category.color,
+                    Category.icon,
+                    func.sum(Expense.amount).label("total"),
+                    func.count(Expense.id).label("count"),
+                )
+                .join(Category, Expense.category_id == Category.id)
+                .where(
+                    Expense.is_active,
+                    Expense.date >= month_start,
+                    Expense.date < month_end,
+                )
+                .group_by(Category.id, Category.name, Category.color, Category.icon)
+                .order_by(func.sum(Expense.amount).desc())
+            )
+            category_result = await self.db.execute(category_query)
+            categories = [
+                {
+                    "name": cat.name,
+                    "color": cat.color,
+                    "icon": cat.icon,
+                    "total": float(cat.total),
+                    "count": cat.count,
+                }
+                for cat in category_result.all()
+            ]
+
+            history.append({
+                "year": year,
+                "month": month,
+                "total": float(row.total),
+                "count": row.count,
+                "categories": categories,
+                "expenses": [
+                    {
+                        "id": exp.id,
+                        "label": exp.label,
+                        "amount": float(exp.amount),
+                        "date": exp.date.isoformat(),
+                        "category_name": exp.category.name if exp.category else None,
+                        "category_color": exp.category.color if exp.category else None,
+                        "category_icon": exp.category.icon if exp.category else None,
+                        "is_recurring": exp.is_recurring,
+                    }
+                    for exp in expenses
+                ],
+            })
+
+        return history

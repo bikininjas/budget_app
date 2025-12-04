@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X } from 'lucide-react';
+import { X, RefreshCcw } from 'lucide-react';
 import {
   expensesApi,
   categoriesApi,
@@ -27,6 +27,7 @@ const expenseSchema = z.object({
   split_type: z.nativeEnum(SplitType),
   frequency: z.nativeEnum(Frequency),
   project_id: z.coerce.number().optional().nullable(),
+  is_recurring: z.boolean(),
 });
 
 type ExpenseFormData = z.infer<typeof expenseSchema>;
@@ -73,6 +74,7 @@ export function ExpenseFormModal({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
@@ -87,8 +89,11 @@ export function ExpenseFormModal({
       split_type: SplitType.EQUAL,
       frequency: Frequency.ONE_TIME,
       project_id: null,
+      is_recurring: false,
     },
   });
+
+  const isRecurring = watch('is_recurring');
 
   useEffect(() => {
     if (expense) {
@@ -103,6 +108,7 @@ export function ExpenseFormModal({
         split_type: expense.split_type,
         frequency: expense.frequency,
         project_id: expense.project_id,
+        is_recurring: expense.is_recurring,
       });
     } else {
       reset({
@@ -116,6 +122,7 @@ export function ExpenseFormModal({
         split_type: SplitType.EQUAL,
         frequency: Frequency.ONE_TIME,
         project_id: null,
+        is_recurring: false,
       });
     }
   }, [expense, reset]);
@@ -155,28 +162,28 @@ export function ExpenseFormModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/50"
         onClick={onClose}
       />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">
+      <div className="relative bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             {isEditing ? 'Modifier la dépense' : 'Nouvelle dépense'}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-slate-100 rounded"
+            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="col-span-1 sm:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Libellé *
               </label>
               <input
@@ -192,7 +199,7 @@ export function ExpenseFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Montant (€) *
               </label>
               <input
@@ -210,7 +217,7 @@ export function ExpenseFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Date *
               </label>
               <input
@@ -226,7 +233,7 @@ export function ExpenseFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Catégorie *
               </label>
               <select {...register('category_id')} className="input">
@@ -245,7 +252,7 @@ export function ExpenseFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Compte bancaire *
               </label>
               <select {...register('account_id')} className="input">
@@ -264,7 +271,7 @@ export function ExpenseFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Assigné à *
               </label>
               <select {...register('assigned_to')} className="input">
@@ -283,7 +290,7 @@ export function ExpenseFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Répartition *
               </label>
               <select {...register('split_type')} className="input">
@@ -296,7 +303,7 @@ export function ExpenseFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Fréquence
               </label>
               <select {...register('frequency')} className="input">
@@ -309,7 +316,7 @@ export function ExpenseFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Projet
               </label>
               <select {...register('project_id')} className="input">
@@ -322,8 +329,22 @@ export function ExpenseFormModal({
               </select>
             </div>
 
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+            <div className="flex items-center">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...register('is_recurring')}
+                  className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500 dark:bg-slate-700"
+                />
+                <span className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <RefreshCcw className={`w-4 h-4 ${isRecurring ? 'text-primary-500' : 'text-slate-400'}`} />
+                  Dépense récurrente
+                </span>
+              </label>
+            </div>
+
+            <div className="col-span-1 sm:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Description
               </label>
               <textarea
@@ -335,11 +356,11 @@ export function ExpenseFormModal({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg"
+              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
             >
               Annuler
             </button>
