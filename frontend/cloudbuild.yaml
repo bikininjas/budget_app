@@ -1,0 +1,19 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_URL=$_BACKEND_URL'
+      - '-t'
+      - '$_IMAGE'
+      - '.'
+
+images:
+  - '$_IMAGE'
+
+substitutions:
+  _BACKEND_URL: 'https://budget-backend-1027957729311.europe-west1.run.app'
+  _IMAGE: 'europe-west1-docker.pkg.dev/sebsandbbox/budget-app/budget-frontend:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
