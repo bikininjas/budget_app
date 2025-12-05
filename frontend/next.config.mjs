@@ -2,14 +2,8 @@
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000'}/api/:path*`,
-      },
-    ];
-  },
+  // Removed rewrites - using direct API URLs via axios client
+  // This avoids baking HTTP URLs at build time
 };
 
 export default nextConfig;
