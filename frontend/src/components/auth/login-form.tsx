@@ -105,12 +105,6 @@ export function LoginForm() {
           'Se connecter'
         )}
       </button>
-
-      <p className="text-sm text-slate-500 text-center mt-4">
-        Utilisateurs par défaut: <strong>seb</strong> ou <strong>marie</strong>
-        <br />
-        Mot de passe: <strong>changeme123</strong>
-      </p>
     </form>
   );
 }

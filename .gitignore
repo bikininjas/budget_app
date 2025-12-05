@@ -2,7 +2,7 @@
 node_modules/
 .pnp
 .pnp.js
-
+google-cloud-sdk/
 # Testing
 coverage/
 .ruff_cache

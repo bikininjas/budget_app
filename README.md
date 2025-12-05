@@ -4,47 +4,61 @@ Application de gestion de budget familial pour Marie et Seb.
 
 ## 🚀 Fonctionnalités
 
-- **Gestion des dépenses** : Ajouter, modifier et supprimer des dépenses
-- **Assignation des dépenses** : Attribuer chaque dépense à Marie ou Seb
-- **Comptes bancaires** : 
-  - Caisse d'Épargne Joint
-  - Caisse d'Épargne Seb
-  - Caisse d'Épargne Marie
-  - N26 Seb
-- **Répartition des dépenses** :
-  - 50/50
-  - 1/3 - 2/3
-  - 2/3 - 1/3
-  - 100% Marie
-  - 100% Seb
-- **Catégories** : Organisation des dépenses par catégorie (Alimentation, Logement, Transport, etc.)
-- **Projets** : Suivi de budget pour des projets spécifiques (vacances, travaux, etc.)
+### Gestion des dépenses
+- **Dépenses** : Ajouter, modifier et supprimer des dépenses
+- **Assignation** : Attribuer chaque dépense à Marie ou Seb
+- **Dépenses récurrentes** : Marquer les dépenses qui reviennent chaque mois
+- **Historique** : Vue mensuelle de toutes les dépenses avec tendances
+
+### Budget prévisionnel
+- **Charges fixes** : Gérer les dépenses récurrentes à prévoir (loyer, assurances, abonnements...)
+- **Fréquence** : Mensuel, trimestriel ou annuel
+- **Calcul automatique** : Conversion en montant mensuel équivalent
+
+### Comptes bancaires
+- Caisse d'Épargne Joint
+- Caisse d'Épargne Seb
+- Caisse d'Épargne Marie
+- N26 Seb
+
+### Répartition des dépenses
+- 50/50
+- 1/3 - 2/3
+- 2/3 - 1/3
+- 100% Marie
+- 100% Seb
+
+### Autres fonctionnalités
+- **Catégories** : Organisation des dépenses (Alimentation, Logement, Transport, etc.)
+- **Projets** : Suivi de budget pour des projets spécifiques (vacances, travaux...)
 - **Graphiques** : Visualisation des dépenses par mois et par catégorie
 - **Balance** : Calcul automatique de qui doit combien à qui
-- **Authentification** : Connexion sécurisée avec JWT
+- **Dark mode** : Interface adaptée au thème système
+- **Responsive** : Design adapté mobile et desktop
 
 ## 🛠️ Stack technique
 
 ### Backend
 - **Python 3.12** avec FastAPI
-- **PostgreSQL** avec SQLAlchemy (async)
+- **PostgreSQL 16** avec SQLAlchemy 2.0 (async)
 - **Alembic** pour les migrations
 - **Pydantic v2** pour la validation
-- **Ruff** pour le linting
+- **bcrypt** pour le hashage des mots de passe
+- **JWT** pour l'authentification
 
 ### Frontend
 - **Next.js 15** avec App Router
-- **React 19** avec TypeScript
+- **React 19** avec TypeScript 5.7
 - **TanStack Query v5** pour la gestion des données
 - **Recharts** pour les graphiques
 - **Tailwind CSS** pour le styling
+- **Lucide React** pour les icônes
 - **Bun** comme gestionnaire de packages
 
 ### Infrastructure
 - **Docker** & **Docker Compose**
-- **Nginx** comme reverse proxy
-- **GitHub Actions** pour CI/CD
-- **Google Cloud Run** pour l'hébergement
+- **Volume PostgreSQL** persistant
+- Scripts de **backup/restore**
 
 ## 📁 Structure du projet
 
@@ -52,203 +66,164 @@ Application de gestion de budget familial pour Marie et Seb.
 budget_app/
 ├── backend/
 │   ├── app/
-│   │   ├── api/
-│   │   │   ├── deps.py
-│   │   │   └── routes/
-│   │   ├── core/
-│   │   │   ├── config.py
-│   │   │   ├── database.py
-│   │   │   └── security.py
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── services/
+│   │   ├── api/routes/          # Endpoints API
+│   │   ├── core/                # Config, DB, sécurité
+│   │   ├── models/              # Modèles SQLAlchemy
+│   │   ├── schemas/             # Schémas Pydantic
+│   │   ├── services/            # Logique métier
 │   │   └── main.py
-│   ├── alembic/
-│   ├── Dockerfile
-│   └── pyproject.toml
+│   ├── alembic/versions/        # Migrations DB
+│   └── Dockerfile
 ├── frontend/
 │   ├── src/
-│   │   ├── app/
-│   │   ├── components/
-│   │   ├── contexts/
-│   │   ├── lib/
-│   │   └── types/
-│   ├── Dockerfile
-│   └── package.json
-├── nginx/
-├── .github/workflows/
-├── docker-compose.yml
-└── docker-compose.dev.yml
+│   │   ├── app/(dashboard)/     # Pages de l'app
+│   │   ├── components/          # Composants React
+│   │   ├── contexts/            # Auth context
+│   │   ├── lib/api/             # Clients API
+│   │   └── types/               # Types TypeScript
+│   └── Dockerfile
+├── scripts/
+│   ├── backup-db.sh             # Backup PostgreSQL
+│   ├── restore-db.sh            # Restore PostgreSQL
+│   └── migrate-to-cloud.sh      # Guide migration cloud
+└── docker-compose.yml
 ```
 
 ## 🚀 Démarrage rapide
 
 ### Prérequis
 - Docker et Docker Compose
-- Node.js 22+ et Bun (pour le développement local)
-- Python 3.12+ (pour le développement local)
 
-### Développement avec Docker
+### Démarrage
 
 ```bash
-# Copier les variables d'environnement
-cp .env.example .env
+# Cloner le repo
+git clone https://github.com/bikininjas/budget_app.git
+cd budget_app
 
-# Démarrer les services de développement
-docker compose -f docker-compose.dev.yml up -d
+# Démarrer les services
+docker compose up -d
 
 # Exécuter les migrations
 docker compose exec backend alembic upgrade head
 ```
 
 L'application sera accessible sur :
-- Frontend : http://localhost:3000
-- Backend API : http://localhost:8000
-- Documentation API : http://localhost:8000/docs
+- **Frontend** : http://localhost:3001
+- **Backend API** : http://localhost:8001
+- **Documentation API** : http://localhost:8001/docs
 
-### Développement local (sans Docker)
+## 🔐 Sécurité
 
-#### Backend
+### Variables d'environnement
 
-```bash
-cd backend
-
-# Créer un environnement virtuel
-python -m venv venv
-source venv/bin/activate  # ou `venv\Scripts\activate` sur Windows
-
-# Installer les dépendances
-pip install -e ".[dev]"
-
-# Configurer les variables d'environnement
-export DATABASE_URL="postgresql+asyncpg://user:password@localhost:5432/budget_db"
-export SECRET_KEY="dev-secret-key"
-export CORS_ORIGINS="http://localhost:3000"
-
-# Exécuter les migrations
-alembic upgrade head
-
-# Démarrer le serveur
-uvicorn app.main:app --reload
-```
-
-#### Frontend
+Les secrets sont gérés via des variables d'environnement. Créez un fichier `.env` à la racine :
 
 ```bash
-cd frontend
+# Base de données
+POSTGRES_USER=budget_user
+POSTGRES_PASSWORD=<votre_mot_de_passe_securise>
+POSTGRES_DB=budget_db
 
-# Installer les dépendances
-bun install
-
-# Configurer les variables d'environnement
-echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
-
-# Démarrer le serveur de développement
-bun dev
+# Backend
+SECRET_KEY=<clé_secrète_longue_et_aléatoire>
+DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 ```
 
-## 🔐 Authentification
+⚠️ **Ne jamais commiter le fichier `.env`** - il est dans `.gitignore`
 
-### Utilisateurs par défaut
+### Utilisateurs par défaut (développement)
 
-| Username | Password | Rôle |
-|----------|----------|------|
-| seb | changeme123 | admin |
-| marie | changeme123 | user |
+Les utilisateurs de test sont créés automatiquement lors de la première migration.
 
-⚠️ **Important** : Changez ces mots de passe en production !
+| Username | Rôle |
+|----------|------|
+| seb | admin |
+| marie | user |
 
-### API Endpoints
-
-```
-POST /api/auth/login          # Connexion
-POST /api/auth/register       # Inscription
-POST /api/auth/refresh        # Rafraîchir le token
-GET  /api/users/me            # Utilisateur courant
-```
+Le mot de passe par défaut est défini dans la migration seed et doit être changé en production.
 
 ## 📊 API Documentation
 
-Une documentation interactive Swagger est disponible sur `/docs` lorsque le backend est en cours d'exécution.
+Documentation Swagger interactive disponible sur `/docs`.
 
 ### Endpoints principaux
 
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
+| POST | /api/auth/login | Connexion |
 | GET | /api/expenses | Liste des dépenses |
 | POST | /api/expenses | Créer une dépense |
-| PUT | /api/expenses/{id} | Modifier une dépense |
-| DELETE | /api/expenses/{id} | Supprimer une dépense |
-| GET | /api/expenses/stats/monthly/{year} | Stats mensuelles |
-| GET | /api/expenses/stats/by-category | Stats par catégorie |
-| GET | /api/categories | Liste des catégories |
-| GET | /api/accounts | Liste des comptes |
-| GET | /api/projects | Liste des projets |
+| GET | /api/expenses/stats/history | Historique mensuel |
+| GET | /api/recurring-charges | Charges fixes |
+| GET | /api/recurring-charges/summary | Résumé budget |
+| GET | /api/categories | Catégories |
+| GET | /api/accounts | Comptes bancaires |
+| GET | /api/projects | Projets |
 
-## 🚢 Déploiement
+## 💾 Backup & Restore
 
-### Google Cloud Run
-
-1. Configurer les secrets GitHub :
-   - `GCP_PROJECT_ID`
-   - `WIF_PROVIDER` (Workload Identity Federation)
-   - `WIF_SERVICE_ACCOUNT`
-   - `DATABASE_URL`
-   - `SECRET_KEY`
-   - `CORS_ORIGINS`
-
-2. Push sur la branche `main` pour déclencher le déploiement automatique
-
-### Docker Compose (Production)
+### Sauvegarder la base de données
 
 ```bash
-# Avec le profil production (inclut Nginx)
-docker compose --profile production up -d
+./scripts/backup-db.sh
+# Crée un fichier dans ./backups/
 ```
 
-## 🧪 Tests
+### Restaurer une sauvegarde
 
-### Backend
+```bash
+./scripts/restore-db.sh ./backups/budget_db_YYYYMMDD_HHMMSS.sql
+```
+
+## 🧪 Développement
+
+### Backend (sans Docker)
 
 ```bash
 cd backend
-pytest --cov=app
+python -m venv venv
+source venv/bin/activate
+pip install -e ".[dev]"
+
+export DATABASE_URL="postgresql+asyncpg://user:pass@localhost:5432/budget_db"
+export SECRET_KEY="dev-secret-key"
+
+alembic upgrade head
+uvicorn app.main:app --reload --port 8001
+```
+
+### Frontend (sans Docker)
+
+```bash
+cd frontend
+bun install
+echo "NEXT_PUBLIC_API_URL=http://localhost:8001" > .env.local
+bun dev
 ```
 
 ### Linting
 
 ```bash
 # Backend
-cd backend
-ruff check .
-ruff format .
+cd backend && ruff check . && ruff format .
 
 # Frontend
-cd frontend
-bun lint
+cd frontend && bun lint
 ```
 
 ## 📝 Migrations
 
 ```bash
 # Créer une nouvelle migration
-cd backend
-alembic revision --autogenerate -m "description"
+docker compose exec backend alembic revision --autogenerate -m "description"
 
 # Appliquer les migrations
-alembic upgrade head
+docker compose exec backend alembic upgrade head
 
-# Annuler la dernière migration
-alembic downgrade -1
+# Rollback
+docker compose exec backend alembic downgrade -1
 ```
-
-## 🤝 Contribution
-
-1. Fork le projet
-2. Créer une branche (`git checkout -b feature/amazing-feature`)
-3. Commit les changements (`git commit -m 'Add amazing feature'`)
-4. Push sur la branche (`git push origin feature/amazing-feature`)
-5. Ouvrir une Pull Request
 
 ## 📜 Licence
 
