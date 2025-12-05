@@ -225,6 +225,40 @@ gcloud run services update budget-backend --region europe-west1 --set-env-vars="
 
 ---
 
+## 💾 Backups Automatiques
+
+Les backups de la base de données sont effectués **automatiquement tous les jours à 4h** (heure française) via GitHub Actions.
+
+### Fonctionnement
+
+- Les backups sont stockés dans Google Cloud Storage (`gs://budget-app-backups/`)
+- Rétention automatique de **30 jours** (les vieux backups sont supprimés automatiquement)
+- Format: `budget_backup_YYYYMMDD_HHMMSS.sql.gz`
+
+### Lancer un backup manuellement
+
+1. Aller sur https://github.com/bikininjas/budget_app/actions
+2. Cliquer sur "Daily Database Backup"
+3. Cliquer sur "Run workflow"
+
+### Restaurer un backup
+
+```bash
+# Lister les backups disponibles
+gsutil ls -l gs://budget-app-backups/
+
+# Télécharger un backup
+gsutil cp gs://budget-app-backups/budget_backup_XXXXXXXX_XXXXXX.sql.gz .
+
+# Décompresser
+gunzip budget_backup_XXXXXXXX_XXXXXX.sql.gz
+
+# Restaurer (remplacer DATABASE_URL par ta vraie URL)
+psql "$DATABASE_URL" < budget_backup_XXXXXXXX_XXXXXX.sql
+```
+
+---
+
 ## 🔄 Mises à jour
 
 Pour redéployer après des modifications:

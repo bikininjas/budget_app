@@ -12,9 +12,17 @@ function getApiBaseUrl(): string {
     return process.env.NEXT_PUBLIC_API_URL;
   }
   
-  // Fallback: use same host as frontend but on port 8001
+  // Fallback: use same host as frontend with same protocol
   const hostname = window.location.hostname;
-  return `http://${hostname}:8001`;
+  const protocol = window.location.protocol;
+  
+  // Local development
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return `http://${hostname}:8001`;
+  }
+  
+  // Production: use HTTPS
+  return `${protocol}//${hostname}:8001`;
 }
 
 const API_BASE_URL = getApiBaseUrl();
