@@ -1,26 +1,19 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-// Production backend URL (Cloud Run) - ALWAYS HTTPS
-// Last updated: 2025-12-05 13:00 - Force cache bust
-const PRODUCTION_API_URL = 'https://budget-backend-5rvijcshfq-ew.a.run.app';
+// Production backend URL - Custom domain (always HTTPS)
+const PRODUCTION_API_URL = 'https://backend-budget.novacat.fr';
 
-// Determine API URL dynamically for network access
+// Determine API URL dynamically
 function getApiBaseUrl(): string {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   
-  // Local development ONLY - use env var or localhost
+  // Local development - use env var or localhost
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
   }
   
-  // Production: ALWAYS use hardcoded HTTPS URL
-  // NEVER use NEXT_PUBLIC_API_URL in production (causes http:// issues)
+  // Production - use custom domain
   return PRODUCTION_API_URL;
-}
-
-// Log API URL on client side for debugging
-if (typeof window !== 'undefined') {
-  console.log('🔧 API Client v2025-12-05 - Base URL:', getApiBaseUrl());
 }
 
 export const api = axios.create({
@@ -29,17 +22,10 @@ export const api = axios.create({
   },
 });
 
-// Set baseURL dynamically on every request to force HTTPS
+// Request interceptor
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Always recalculate baseURL to ensure HTTPS
-    const baseUrl = getApiBaseUrl();
-    config.baseURL = `${baseUrl}/api`;
-    
-    // Debug log (remove after fix confirmed)
-    if (typeof window !== 'undefined' && !baseUrl.startsWith('https://')) {
-      console.error('❌ HTTPS ERROR: baseURL is', baseUrl, 'but should be HTTPS!');
-    }
+    config.baseURL = `${getApiBaseUrl()}/api`;
     
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('access_token');
