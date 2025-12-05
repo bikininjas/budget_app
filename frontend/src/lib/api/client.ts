@@ -27,6 +27,12 @@ api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     config.baseURL = `${getApiBaseUrl()}/api`;
     
+    // Add API key if configured (optional security layer)
+    const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+    if (apiKey && config.headers) {
+      config.headers['X-API-Key'] = apiKey;
+    }
+    
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('access_token');
       if (token && config.headers) {

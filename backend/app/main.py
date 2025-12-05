@@ -3,8 +3,9 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routes import accounts, auth, categories, expenses, projects, recurring_charges, users
 from app.core.config import settings
@@ -40,6 +41,24 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # API Key middleware (optional security layer)
+    @app.middleware("http")
+    async def verify_api_key(request: Request, call_next):
+        """Verify API key if configured."""
+        # Skip API key check if not configured or for docs
+        if not settings.api_key or request.url.path.startswith("/api/docs") or request.url.path.startswith("/api/openapi"):
+            return await call_next(request)
+        
+        # Check X-API-Key header
+        api_key = request.headers.get("X-API-Key")
+        if api_key != settings.api_key:
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"detail": "Invalid or missing API key"},
+            )
+        
+        return await call_next(request)
 
     # Include routers
     app.include_router(auth.router, prefix="/api")

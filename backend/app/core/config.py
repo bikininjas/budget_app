@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     secret_key: str = "change-this-secret-key-in-production"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
+    api_key: str = ""  # Optional API key for frontend authentication
 
     # CORS - Support wildcard "*" for all origins
     cors_origins: str = "http://localhost:3000,http://frontend:3000"
