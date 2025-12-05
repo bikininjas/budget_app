@@ -1,10 +1,13 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
+// Production backend URL (Cloud Run)
+const PRODUCTION_API_URL = 'https://budget-backend-5rvijcshfq-ew.a.run.app';
+
 // Determine API URL dynamically for network access
 function getApiBaseUrl(): string {
   // Server-side: use environment variable
   if (typeof window === 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+    return process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
   }
   
   // Client-side: check if NEXT_PUBLIC_API_URL is set (injected at build time)
@@ -12,17 +15,16 @@ function getApiBaseUrl(): string {
     return process.env.NEXT_PUBLIC_API_URL;
   }
   
-  // Fallback: use same host as frontend with same protocol
+  // Fallback based on hostname
   const hostname = window.location.hostname;
-  const protocol = window.location.protocol;
   
   // Local development
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return `http://${hostname}:8001`;
+    return 'http://localhost:8001';
   }
   
-  // Production: use HTTPS
-  return `${protocol}//${hostname}:8001`;
+  // Production: use the Cloud Run backend
+  return PRODUCTION_API_URL;
 }
 
 const API_BASE_URL = getApiBaseUrl();
