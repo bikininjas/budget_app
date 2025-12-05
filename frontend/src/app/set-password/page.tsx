@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/auth-context';
 export default function SetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { refreshUser } = useAuth();
   const token = searchParams.get('token');
 
   const [password, setPassword] = useState('');
@@ -32,9 +32,10 @@ export default function SetPasswordPage() {
   const setPasswordMutation = useMutation({
     mutationFn: (data: { token: string; new_password: string }) =>
       authApi.setInitialPassword(data),
-    onSuccess: (data) => {
-      // Auto-login with the returned token
-      login(data.access_token);
+    onSuccess: async (data) => {
+      // Store token and refresh user
+      localStorage.setItem('access_token', data.access_token);
+      await refreshUser();
       router.push('/dashboard');
     },
     onError: (err: Error) => {
