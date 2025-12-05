@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // Production backend URL (Cloud Run) - ALWAYS HTTPS
+// Last updated: 2025-12-05 13:00 - Force cache bust
 const PRODUCTION_API_URL = 'https://budget-backend-5rvijcshfq-ew.a.run.app';
 
 // Determine API URL dynamically for network access
@@ -15,6 +16,11 @@ function getApiBaseUrl(): string {
   // Production: ALWAYS use hardcoded HTTPS URL
   // NEVER use NEXT_PUBLIC_API_URL in production (causes http:// issues)
   return PRODUCTION_API_URL;
+}
+
+// Log API URL on client side for debugging
+if (typeof window !== 'undefined') {
+  console.log('🔧 API Client v2025-12-05 - Base URL:', getApiBaseUrl());
 }
 
 export const api = axios.create({
