@@ -111,7 +111,7 @@ jobs:
             --concurrency ${{ vars.CONCURRENCY || '80' }} \
             --timeout ${{ vars.TIMEOUT || '300' }} \
             --set-secrets="DATABASE_URL=${{ env.DATABASE_URL_SECRET }}:latest,SECRET_KEY=${{ env.SECRET_KEY_SECRET }}:latest,SMTP_HOST=smtp-host:latest,SMTP_PORT=smtp-port:latest,SMTP_USER=smtp-user:latest,SMTP_PASSWORD=smtp-password:latest,SMTP_FROM_EMAIL=smtp-from-email:latest,SMTP_FROM_NAME=smtp-from-name:latest,FRONTEND_URL=frontend-url:latest" \
-            --set-env-vars="CORS_ORIGINS=${CORS_ORIGINS}"
+            --set-env-vars="^##^CORS_ORIGINS=${CORS_ORIGINS}"
 
       - name: Get Backend URL
         id: backend-url
