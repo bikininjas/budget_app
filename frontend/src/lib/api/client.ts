@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-// Production backend URL (Cloud Run)
+// Production backend URL (Cloud Run) - ALWAYS HTTPS
 const PRODUCTION_API_URL = 'https://budget-backend-5rvijcshfq-ew.a.run.app';
 
 // Determine API URL dynamically for network access
@@ -20,22 +20,22 @@ function getApiBaseUrl(): string {
   }
   
   // Production: ALWAYS use HTTPS backend URL
-  // Force HTTPS even if NEXT_PUBLIC_API_URL contains http:// (build-time issue)
+  // Ignore NEXT_PUBLIC_API_URL completely - hardcode HTTPS
   return PRODUCTION_API_URL;
 }
 
-const API_BASE_URL = getApiBaseUrl();
-
 export const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to add auth token
+// Set baseURL dynamically on every request to force HTTPS
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Always recalculate baseURL to ensure HTTPS
+    config.baseURL = `${getApiBaseUrl()}/api`;
+    
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('access_token');
       if (token && config.headers) {
