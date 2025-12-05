@@ -5,25 +5,20 @@ const PRODUCTION_API_URL = 'https://budget-backend-5rvijcshfq-ew.a.run.app';
 
 // Determine API URL dynamically for network access
 function getApiBaseUrl(): string {
-  // Server-side: use environment variable
+  // Server-side: use environment variable or production URL
   if (typeof window === 'undefined') {
     return process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
   }
   
-  // Client-side: check if NEXT_PUBLIC_API_URL is set (injected at build time)
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
-  
-  // Fallback based on hostname
   const hostname = window.location.hostname;
   
-  // Local development
+  // Local development - use env var or localhost
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:8001';
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
   }
   
-  // Production: use the Cloud Run backend
+  // Production: ALWAYS use HTTPS backend URL
+  // Ignore NEXT_PUBLIC_API_URL if it contains http:// (build-time issue)
   return PRODUCTION_API_URL;
 }
 
