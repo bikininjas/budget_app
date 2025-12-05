@@ -31,6 +31,18 @@ class Settings(BaseSettings):
     # CORS - Support wildcard "*" for all origins
     cors_origins: str = "http://localhost:3000,http://frontend:3000"
 
+    # Email SMTP settings
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_from_name: str = "DuoBudget"
+
+    # Magic link settings
+    magic_link_expire_minutes: int = 15
+    frontend_url: str = "http://localhost:3000"
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Get CORS origins as a list."""
