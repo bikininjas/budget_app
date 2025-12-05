@@ -49,3 +49,4 @@ export const ACCOUNT_TYPE_LABELS: Record<string, string> = {
   caisse_epargne_marie: 'Caisse d\'Épargne Marie',
   n26_seb: 'N26 Seb',
 };
+// Force rebuild Fri Dec  5 11:30:58 CET 2025
