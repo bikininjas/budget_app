@@ -15,11 +15,16 @@ on:
         default: true
 
 env:
-  PROJECT_ID: sebsandbbox
-  REGION: europe-west1
-  BACKEND_SERVICE: budget-backend
-  FRONTEND_SERVICE: budget-frontend
-  ARTIFACT_REGISTRY: budget-app
+  # Secrets from organization
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  # Variables from repository
+  REGION: ${{ vars.GCP_REGION }}
+  BACKEND_SERVICE: ${{ vars.BACKEND_SERVICE }}
+  FRONTEND_SERVICE: ${{ vars.FRONTEND_SERVICE }}
+  ARTIFACT_REGISTRY: ${{ vars.ARTIFACT_REGISTRY }}
+  # Secret names in GCP Secret Manager
+  DATABASE_URL_SECRET: ${{ vars.DATABASE_URL_SECRET }}
+  SECRET_KEY_SECRET: ${{ vars.SECRET_KEY_SECRET }}
 
 jobs:
   # Detect which services changed
@@ -63,7 +68,7 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCS_GH_SVC_ACCOUNT_JSON_KEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -86,19 +91,27 @@ jobs:
 
       - name: Deploy Backend to Cloud Run
         run: |
+          # Get frontend URL for CORS (if exists)
+          FRONTEND_URL=$(gcloud run services describe ${{ env.FRONTEND_SERVICE }} --region ${{ env.REGION }} --format 'value(status.url)' 2>/dev/null || echo "")
+          
+          CORS_ORIGINS="http://localhost:3001,http://localhost:3000"
+          if [ -n "$FRONTEND_URL" ]; then
+            CORS_ORIGINS="${FRONTEND_URL},${CORS_ORIGINS}"
+          fi
+          
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ env.BACKEND_SERVICE }}:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --memory 512Mi \
-            --cpu 1 \
-            --min-instances 0 \
-            --max-instances 2 \
-            --concurrency 80 \
-            --timeout 300 \
-            --set-secrets="DATABASE_URL=budget-database-url:latest,SECRET_KEY=budget-secret-key:latest" \
-            --set-env-vars="CORS_ORIGINS=https://budget-frontend-1027957729311.europe-west1.run.app"
+            --memory ${{ vars.BACKEND_MEMORY || '512Mi' }} \
+            --cpu ${{ vars.BACKEND_CPU || '1' }} \
+            --min-instances ${{ vars.MIN_INSTANCES || '0' }} \
+            --max-instances ${{ vars.MAX_INSTANCES || '2' }} \
+            --concurrency ${{ vars.CONCURRENCY || '80' }} \
+            --timeout ${{ vars.TIMEOUT || '300' }} \
+            --set-secrets="DATABASE_URL=${{ env.DATABASE_URL_SECRET }}:latest,SECRET_KEY=${{ env.SECRET_KEY_SECRET }}:latest" \
+            --set-env-vars="CORS_ORIGINS=${CORS_ORIGINS}"
 
       - name: Get Backend URL
         id: backend-url
@@ -115,7 +128,6 @@ jobs:
     name: Deploy Frontend
     runs-on: ubuntu-latest
     needs: [changes, deploy-backend]
-    # Run if backend was deployed OR if only frontend changed
     if: |
       always() && 
       (
@@ -134,7 +146,7 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCS_GH_SVC_ACCOUNT_JSON_KEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -170,11 +182,11 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --memory 256Mi \
-            --cpu 1 \
-            --min-instances 0 \
-            --max-instances 2 \
-            --concurrency 80 \
+            --memory ${{ vars.FRONTEND_MEMORY || '256Mi' }} \
+            --cpu ${{ vars.FRONTEND_CPU || '1' }} \
+            --min-instances ${{ vars.MIN_INSTANCES || '0' }} \
+            --max-instances ${{ vars.MAX_INSTANCES || '2' }} \
+            --concurrency ${{ vars.CONCURRENCY || '80' }} \
             --set-env-vars="NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.url }}"
 
       - name: Get Frontend URL
@@ -197,7 +209,7 @@ jobs:
       - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCS_GH_SVC_ACCOUNT_JSON_KEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
