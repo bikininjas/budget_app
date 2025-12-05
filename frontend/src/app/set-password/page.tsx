@@ -1,12 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { authApi } from '@/lib/api/auth';
 import { useAuth } from '@/contexts/auth-context';
 
-export default function SetPasswordPage() {
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-500">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
@@ -115,7 +128,7 @@ export default function SetPasswordPage() {
       <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-            🏦 DuoBudget
+            �� DuoBudget
           </h1>
           <p className="text-gray-600 mt-2">Créez votre mot de passe</p>
         </div>
@@ -208,5 +221,13 @@ export default function SetPasswordPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SetPasswordPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <SetPasswordContent />
+    </Suspense>
   );
 }
