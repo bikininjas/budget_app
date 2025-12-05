@@ -158,6 +158,8 @@ jobs:
         id: backend-url
         run: |
           URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region ${{ env.REGION }} --format 'value(status.url)')
+          # Force HTTPS (Cloud Run always serves HTTPS)
+          URL="${URL/http:/https:}"
           echo "url=$URL" >> $GITHUB_OUTPUT
           echo "Backend URL: $URL"
 

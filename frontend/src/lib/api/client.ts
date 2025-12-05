@@ -7,7 +7,9 @@ const PRODUCTION_API_URL = 'https://budget-backend-5rvijcshfq-ew.a.run.app';
 function getApiBaseUrl(): string {
   // Server-side: use environment variable or production URL
   if (typeof window === 'undefined') {
-    return process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
+    const envUrl = process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
+    // Force HTTPS in production (Cloud Run always serves HTTPS)
+    return envUrl.replace(/^http:/, 'https:');
   }
   
   const hostname = window.location.hostname;
@@ -18,7 +20,7 @@ function getApiBaseUrl(): string {
   }
   
   // Production: ALWAYS use HTTPS backend URL
-  // Ignore NEXT_PUBLIC_API_URL if it contains http:// (build-time issue)
+  // Force HTTPS even if NEXT_PUBLIC_API_URL contains http:// (build-time issue)
   return PRODUCTION_API_URL;
 }
 
