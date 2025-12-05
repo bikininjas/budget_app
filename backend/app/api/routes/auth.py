@@ -7,7 +7,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.deps import CurrentUser, DbSession
 from app.core.security import create_access_token
-from app.schemas.user import Token, UserCreate, UserResponse
+from app.core.security import create_access_token, get_password_hash, verify_password
+from app.schemas.user import ChangePassword, Token, UserCreate, UserResponse
 from app.services.user import UserService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -84,3 +85,24 @@ async def refresh_token(current_user: CurrentUser) -> Token:
         }
     )
     return Token(access_token=access_token)
+
+
+@router.post("/change-password")
+async def change_password(
+    password_data: ChangePassword,
+    current_user: CurrentUser,
+    db: DbSession,
+) -> dict:
+    """Change password for authenticated user."""
+    # Verify current password
+    if not verify_password(password_data.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Mot de passe actuel incorrect",
+        )
+
+    # Update password
+    current_user.hashed_password = get_password_hash(password_data.new_password)
+    await db.flush()
+
+    return {"message": "Mot de passe modifié avec succès"}

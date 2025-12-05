@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
+import { ChangePasswordForm } from '@/components/settings';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -44,6 +45,14 @@ export default function SettingsPage() {
               <p className="text-lg text-slate-900 dark:text-white capitalize">{user?.role}</p>
             </div>
           </div>
+        </div>
+
+        {/* Change Password Section */}
+        <div className="card dark:bg-slate-800 dark:border-slate-700 p-6">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
+            Changer le mot de passe
+          </h2>
+          <ChangePasswordForm />
         </div>
 
         {/* App Info Section */}

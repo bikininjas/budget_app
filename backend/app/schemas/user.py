@@ -68,3 +68,10 @@ class TokenPayload(BaseModel):
     username: str
     role: str
     exp: datetime
+
+
+class ChangePassword(BaseModel):
+    """Schema for changing password."""
+
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=8, max_length=100)

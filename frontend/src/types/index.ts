@@ -28,6 +28,11 @@ export interface Token {
   token_type: string;
 }
 
+export interface ChangePassword {
+  current_password: string;
+  new_password: string;
+}
+
 // Account types
 export type AccountType =
   | 'caisse_epargne_joint'
