@@ -5,22 +5,15 @@ const PRODUCTION_API_URL = 'https://budget-backend-5rvijcshfq-ew.a.run.app';
 
 // Determine API URL dynamically for network access
 function getApiBaseUrl(): string {
-  // Server-side: use environment variable or production URL
-  if (typeof window === 'undefined') {
-    const envUrl = process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
-    // Force HTTPS in production (Cloud Run always serves HTTPS)
-    return envUrl.replace(/^http:/, 'https:');
-  }
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   
-  const hostname = window.location.hostname;
-  
-  // Local development - use env var or localhost
+  // Local development ONLY - use env var or localhost
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
   }
   
-  // Production: ALWAYS use HTTPS backend URL
-  // Ignore NEXT_PUBLIC_API_URL completely - hardcode HTTPS
+  // Production: ALWAYS use hardcoded HTTPS URL
+  // NEVER use NEXT_PUBLIC_API_URL in production (causes http:// issues)
   return PRODUCTION_API_URL;
 }
 
@@ -34,7 +27,13 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Always recalculate baseURL to ensure HTTPS
-    config.baseURL = `${getApiBaseUrl()}/api`;
+    const baseUrl = getApiBaseUrl();
+    config.baseURL = `${baseUrl}/api`;
+    
+    // Debug log (remove after fix confirmed)
+    if (typeof window !== 'undefined' && !baseUrl.startsWith('https://')) {
+      console.error('❌ HTTPS ERROR: baseURL is', baseUrl, 'but should be HTTPS!');
+    }
     
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('access_token');
