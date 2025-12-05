@@ -5,9 +5,9 @@ services:
     container_name: budget_db_dev
     restart: unless-stopped
     environment:
-      POSTGRES_USER: budget_user
-      POSTGRES_PASSWORD: budget_password
-      POSTGRES_DB: budget_db
+      POSTGRES_USER: ${POSTGRES_USER:-budget_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-budget_db}
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
     ports:
@@ -25,8 +25,8 @@ services:
     container_name: budget_backend_dev
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+asyncpg://budget_user:budget_password@db:5432/budget_db
-      SECRET_KEY: dev-secret-key-not-for-production
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-budget_user}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:-budget_db}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-me}
       CORS_ORIGINS: "*"
       # Email SMTP settings (for magic links)
       SMTP_HOST: smtp.gmail.com

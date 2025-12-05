@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-budget_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-budget_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-budget_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -24,8 +24,8 @@ services:
     container_name: budget_backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-budget_user}:${POSTGRES_PASSWORD:-budget_password}@db:5432/${POSTGRES_DB:-budget_db}
-      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-budget_user}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:-budget_db}
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
     ports:
       - "0.0.0.0:${BACKEND_PORT:-8001}:8000"
