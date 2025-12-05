@@ -75,3 +75,30 @@ class ChangePassword(BaseModel):
 
     current_password: str = Field(..., min_length=1)
     new_password: str = Field(..., min_length=8, max_length=100)
+
+
+class MagicLinkRequest(BaseModel):
+    """Schema for requesting a magic link."""
+
+    email: EmailStr
+
+
+class MagicLinkVerify(BaseModel):
+    """Schema for verifying a magic link token."""
+
+    token: str
+
+
+class SetInitialPassword(BaseModel):
+    """Schema for setting initial password after magic link verification."""
+
+    token: str
+    new_password: str = Field(..., min_length=8, max_length=100)
+
+
+class UserPasswordStatus(BaseModel):
+    """Schema for checking if user has set their password."""
+
+    email: str
+    password_set: bool
+    user_exists: bool

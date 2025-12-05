@@ -33,6 +33,21 @@ export interface ChangePassword {
   new_password: string;
 }
 
+export interface MagicLinkRequest {
+  email: string;
+}
+
+export interface SetInitialPassword {
+  token: string;
+  new_password: string;
+}
+
+export interface UserPasswordStatus {
+  email: string;
+  password_set: boolean;
+  user_exists: boolean;
+}
+
 // Account types
 export type AccountType =
   | 'caisse_epargne_joint'
