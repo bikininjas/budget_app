@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api/client';
 
+// Force dark text on white background for readability
+
 interface BackendRequest {
   url: string;
   scheme: string;
@@ -94,9 +96,9 @@ export default function DebugPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-white p-8" style={{ backgroundColor: 'white', color: 'black' }}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">🔍 Debug Information</h1>
+        <h1 className="text-3xl font-bold mb-6 text-black">🔍 Debug Information</h1>
         
         {/* Client Info */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
