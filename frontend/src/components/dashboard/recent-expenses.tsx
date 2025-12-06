@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { expensesApi } from '@/lib/api';
-import { formatCurrency, formatDateShort, SPLIT_TYPE_LABELS } from '@/lib/utils';
+import { formatCurrency, formatDateShort, getExpenseSplitDescription } from '@/lib/utils';
 
 export function RecentExpenses() {
   const { data: expenses, isLoading } = useQuery({
@@ -70,7 +70,11 @@ export function RecentExpenses() {
                   </span>
                 </td>
                 <td className="py-3 text-slate-600 dark:text-slate-300">
-                  {SPLIT_TYPE_LABELS[expense.split_type] || expense.split_type}
+                  {getExpenseSplitDescription(
+                    expense.split_type,
+                    expense.assigned_user_name || '',
+                    Number(expense.amount)
+                  )}
                 </td>
                 <td className="py-3 text-right font-semibold text-slate-900 dark:text-white">
                   {formatCurrency(Number(expense.amount))}
