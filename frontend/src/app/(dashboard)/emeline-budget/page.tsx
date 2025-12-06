@@ -158,7 +158,7 @@ export default function EmelineBudgetPage() {
         <select
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(Number(e.target.value))}
-          className="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          className="rounded-lg border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
         >
           {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
             <option key={month} value={month}>
@@ -169,7 +169,7 @@ export default function EmelineBudgetPage() {
         <select
           value={selectedYear}
           onChange={(e) => setSelectedYear(Number(e.target.value))}
-          className="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          className="rounded-lg border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
         >
           {[2024, 2025, 2026].map((year) => (
             <option key={year} value={year}>
@@ -181,39 +181,39 @@ export default function EmelineBudgetPage() {
 
       {/* Budget Summary */}
       {summary && (
-        <div className="rounded-lg bg-white p-6 shadow">
+        <div className="rounded-lg bg-white dark:bg-slate-800 p-6 shadow dark:border dark:border-slate-700">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Résumé du budget
             </h2>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 dark:text-slate-400">
               {summary.expense_count} dépense{summary.expense_count > 1 ? 's' : ''}
             </span>
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div>
-              <p className="text-sm text-gray-500">Budget mensuel</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-gray-500 dark:text-slate-400">Budget mensuel</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {summary.monthly_budget ? Number(summary.monthly_budget).toFixed(2) : '0.00'} €
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Dépensé</p>
-              <p className="text-2xl font-bold text-orange-600">
+              <p className="text-sm text-gray-500 dark:text-slate-400">Dépensé</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {Number(summary.total_spent).toFixed(2)} €
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Restant</p>
-              <p className={`text-2xl font-bold ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Restant</p>
+              <p className={`text-2xl font-bold ${remainingBudget >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {Number(remainingBudget).toFixed(2)} €
               </p>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-4">
+          <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-4">
             <div
               className={`h-4 rounded-full transition-all ${
                 budgetPercentage > 100 ? 'bg-red-600' : 'bg-indigo-600'
@@ -221,33 +221,33 @@ export default function EmelineBudgetPage() {
               style={{ width: `${Math.min(budgetPercentage, 100)}%` }}
             />
           </div>
-          <p className="mt-2 text-sm text-gray-500 text-right">
+          <p className="mt-2 text-sm text-gray-500 dark:text-slate-400 text-right">
             {budgetPercentage.toFixed(1)}% utilisé
           </p>
         </div>
       )}
 
       {/* Expenses List */}
-      <div className="rounded-lg bg-white shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Dépenses</h2>
+      <div className="rounded-lg bg-white dark:bg-slate-800 shadow dark:border dark:border-slate-700">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Dépenses</h2>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-200 dark:divide-slate-700">
           {isLoading ? (
-            <div className="px-6 py-12 text-center text-gray-500">
+            <div className="px-6 py-12 text-center text-gray-500 dark:text-slate-400">
               Chargement...
             </div>
           ) : expenses.length === 0 ? (
-            <div className="px-6 py-12 text-center text-gray-500">
+            <div className="px-6 py-12 text-center text-gray-500 dark:text-slate-400">
               Aucune dépense pour ce mois
             </div>
           ) : (
             expenses.map((expense) => (
-              <div key={expense.id} className="px-6 py-4 hover:bg-gray-50">
+              <div key={expense.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-slate-700/50">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-medium text-gray-900">
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                         {expense.description}
                       </h3>
                       {expense.product_url && (
@@ -255,21 +255,21 @@ export default function EmelineBudgetPage() {
                           href={expense.product_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-600 hover:text-indigo-500"
+                          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
                         >
                           <LinkIcon className="h-4 w-4" />
                         </a>
                       )}
                     </div>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                       {format(new Date(expense.purchase_date), 'dd MMMM yyyy', { locale: fr })}
                     </p>
                     {expense.notes && (
-                      <p className="mt-1 text-sm text-gray-600">{expense.notes}</p>
+                      <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">{expense.notes}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-4 ml-4">
-                    <span className="text-lg font-semibold text-gray-900">
+                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
                       {expense.amount.toFixed(2)} €
                     </span>
                     <div className="flex gap-2">
@@ -306,13 +306,13 @@ export default function EmelineBudgetPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center p-4">
             <div className="fixed inset-0 bg-black bg-opacity-25" onClick={() => setIsFormOpen(false)} />
-            <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="relative w-full max-w-md rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 {editingExpense ? 'Modifier la dépense' : 'Nouvelle dépense'}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     Description *
                   </label>
                   <input
@@ -320,11 +320,11 @@ export default function EmelineBudgetPage() {
                     name="description"
                     defaultValue={editingExpense?.description}
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     Montant (€) *
                   </label>
                   <input
@@ -334,11 +334,11 @@ export default function EmelineBudgetPage() {
                     min="0"
                     defaultValue={editingExpense?.amount}
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     Date d&apos;achat *
                   </label>
                   <input
@@ -346,11 +346,11 @@ export default function EmelineBudgetPage() {
                     name="purchase_date"
                     defaultValue={editingExpense?.purchase_date || format(new Date(), 'yyyy-MM-dd')}
                     required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     Lien du produit
                   </label>
                   <input
@@ -358,18 +358,18 @@ export default function EmelineBudgetPage() {
                     name="product_url"
                     defaultValue={editingExpense?.product_url || ''}
                     placeholder="https://..."
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     Notes
                   </label>
                   <textarea
                     name="notes"
                     rows={3}
                     defaultValue={editingExpense?.notes || ''}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div className="flex gap-2 justify-end">
@@ -379,7 +379,7 @@ export default function EmelineBudgetPage() {
                       setIsFormOpen(false);
                       setEditingExpense(null);
                     }}
-                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                    className="rounded-lg border border-gray-300 dark:border-slate-600 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700"
                   >
                     Annuler
                   </button>
