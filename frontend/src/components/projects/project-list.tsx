@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Trash2, Plus, Target } from 'lucide-react';
 import { projectsApi } from '@/lib/api';
 import { Project } from '@/types';
-import { formatCurrency, formatDateShort } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { ProjectFormModal } from './project-form-modal';
 
 export function ProjectList() {
