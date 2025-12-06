@@ -36,6 +36,9 @@ def upgrade() -> None:
     except Exception:
         pass  # Value already exists, skip
 
+    # CRITICAL: Commit enum additions before using them in any INSERT/SELECT
+    connection.commit()
+
     # Add monthly_budget column to users table (IF NOT EXISTS handled by op.add_column)
     op.add_column(
         "users",
