@@ -49,19 +49,47 @@ jobs:
         id: db-url
         run: |
           DB_URL=$(gcloud secrets versions access latest --secret=${{ env.DATABASE_URL_SECRET }})
+          
           # Convert asyncpg URL to psql URL
           PSQL_URL=$(echo "$DB_URL" | sed 's/postgresql+asyncpg/postgresql/')
-          echo "::add-mask::$PSQL_URL"
-          echo "url=$PSQL_URL" >> $GITHUB_OUTPUT
+          
+          # Extract components from URL to avoid query parameter issues
+          # Format: postgresql://user:pass@host:port/dbname?params
+          if [[ $PSQL_URL =~ postgresql://([^:]+):([^@]+)@([^:/]+):?([0-9]*)/([^\?]+)(\?.*)? ]]; then
+            DB_USER="${BASH_REMATCH[1]}"
+            DB_PASS="${BASH_REMATCH[2]}"
+            DB_HOST="${BASH_REMATCH[3]}"
+            DB_PORT="${BASH_REMATCH[4]:-5432}"
+            DB_NAME="${BASH_REMATCH[5]}"
+            
+            echo "::add-mask::$DB_PASS"
+            echo "user=$DB_USER" >> $GITHUB_OUTPUT
+            echo "password=$DB_PASS" >> $GITHUB_OUTPUT
+            echo "host=$DB_HOST" >> $GITHUB_OUTPUT
+            echo "port=$DB_PORT" >> $GITHUB_OUTPUT
+            echo "database=$DB_NAME" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Failed to parse DATABASE_URL"
+            exit 1
+          fi
 
       - name: Create Backup
         id: backup
+        env:
+          PGPASSWORD: ${{ steps.db-url.outputs.password }}
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           BACKUP_FILE="budget_backup_${TIMESTAMP}.sql"
           
           echo "Creating backup: $BACKUP_FILE"
-          pg_dump "${{ steps.db-url.outputs.url }}" > "$BACKUP_FILE"
+          # Use individual parameters instead of URL to avoid SSL query param issues
+          pg_dump \
+            -h "${{ steps.db-url.outputs.host }}" \
+            -p "${{ steps.db-url.outputs.port }}" \
+            -U "${{ steps.db-url.outputs.user }}" \
+            -d "${{ steps.db-url.outputs.database }}" \
+            --no-password \
+            > "$BACKUP_FILE"
           
           # Compress
           gzip "$BACKUP_FILE"
