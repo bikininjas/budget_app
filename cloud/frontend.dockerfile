@@ -20,10 +20,10 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# L'URL de l'API sera injectée au runtime via variable d'environnement
-# On utilise une valeur placeholder qui sera remplacée
-ARG NEXT_PUBLIC_API_URL=https://BACKEND_URL_PLACEHOLDER
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+# ✅ SOLUTION RADICALE: Plus de NEXT_PUBLIC_API_URL
+# Le frontend détecte automatiquement l'URL selon le hostname
+# Production = https://backend-budget.novacat.fr (hardcodé)
+# Local = http://localhost:8001 (hardcodé)
 
 RUN bun run build
 

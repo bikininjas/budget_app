@@ -10,6 +10,38 @@ from fastapi.responses import JSONResponse
 from app.api.routes import accounts, auth, categories, expenses, projects, recurring_charges, users
 from app.core.config import settings
 
+# Constants
+DOCS_URL = "/api/docs"
+REDOC_URL = "/api/redoc"
+OPENAPI_URL = "/api/openapi.json"
+HEALTH_URL = "/api/health"
+PUBLIC_ENDPOINTS = [HEALTH_URL, DOCS_URL, REDOC_URL, OPENAPI_URL]
+
+
+def _is_public_endpoint(path: str) -> bool:
+    """Check if the endpoint is public (health check, docs)."""
+    return path in PUBLIC_ENDPOINTS
+
+
+def _get_client_ip(request: Request) -> str:
+    """Extract client IP from request, handling X-Forwarded-For."""
+    forwarded_for = request.headers.get("X-Forwarded-For", "")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    return request.client.host if request.client else ""
+
+
+def _is_ip_allowed(client_ip: str, allowed_ips: list[str]) -> bool:
+    """Check if client IP is in the allowed list."""
+    return bool(allowed_ips) and client_ip in allowed_ips
+
+
+def _is_referer_allowed(referer: str, allowed_referers: list[str]) -> bool:
+    """Check if referer matches any allowed referers."""
+    if not allowed_referers or not referer:
+        return False
+    return any(allowed_ref in referer for allowed_ref in allowed_referers)
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
@@ -25,9 +57,9 @@ def create_application() -> FastAPI:
         title=settings.app_name,
         version=settings.app_version,
         description="Budget management application for couples",
-        docs_url="/api/docs",
-        redoc_url="/api/redoc",
-        openapi_url="/api/openapi.json",
+        docs_url=DOCS_URL,
+        redoc_url=REDOC_URL,
+        openapi_url=OPENAPI_URL,
         lifespan=lifespan,
     )
 
@@ -42,12 +74,42 @@ def create_application() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # IP and Referer filtering middleware (security layer)
+    @app.middleware("http")
+    async def ip_referer_filter(request: Request, call_next):
+        """Filter requests by IP address and Referer header."""
+        # Skip filtering for public endpoints
+        if _is_public_endpoint(request.url.path):
+            return await call_next(request)
+        
+        # Skip if no IP/Referer filtering configured
+        if not settings.allowed_ips_list and not settings.allowed_referers_list:
+            return await call_next(request)
+        
+        # Get client IP
+        client_ip = _get_client_ip(request)
+        
+        # Check IP whitelist
+        if _is_ip_allowed(client_ip, settings.allowed_ips_list):
+            return await call_next(request)
+        
+        # Check Referer whitelist
+        referer = request.headers.get("Referer", "")
+        if _is_referer_allowed(referer, settings.allowed_referers_list):
+            return await call_next(request)
+        
+        # Deny access if restrictions exist but none matched
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"detail": "Access denied: IP or Referer not allowed"},
+        )
+
     # API Key middleware (optional security layer)
     @app.middleware("http")
     async def verify_api_key(request: Request, call_next):
         """Verify API key if configured."""
-        # Skip API key check if not configured or for docs
-        if not settings.api_key or request.url.path.startswith("/api/docs") or request.url.path.startswith("/api/openapi"):
+        # Skip API key check if not configured or for public endpoints
+        if not settings.api_key or _is_public_endpoint(request.url.path):
             return await call_next(request)
         
         # Check X-API-Key header
@@ -69,7 +131,7 @@ def create_application() -> FastAPI:
     app.include_router(projects.router, prefix="/api")
     app.include_router(recurring_charges.router, prefix="/api")
 
-    @app.get("/api/health")
+    @app.get(HEALTH_URL)
     async def health_check() -> dict:
         """Health check endpoint."""
         return {"status": "healthy", "version": settings.app_version}

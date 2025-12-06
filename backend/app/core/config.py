@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     # CORS - Support wildcard "*" for all origins
     cors_origins: str = "http://localhost:3000,http://frontend:3000"
 
+    # IP Filtering (comma-separated list)
+    allowed_ips: str = ""  # e.g., "82.65.136.32,10.0.0.1"
+    allowed_referers: str = ""  # e.g., "budget.novacat.fr,localhost"
+
     # Email SMTP settings
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
@@ -50,6 +54,20 @@ class Settings(BaseSettings):
         if self.cors_origins == "*":
             return ["*"]
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def allowed_ips_list(self) -> list[str]:
+        """Get allowed IPs as a list."""
+        if not self.allowed_ips:
+            return []
+        return [ip.strip() for ip in self.allowed_ips.split(",") if ip.strip()]
+
+    @property
+    def allowed_referers_list(self) -> list[str]:
+        """Get allowed referers as a list."""
+        if not self.allowed_referers:
+            return []
+        return [ref.strip() for ref in self.allowed_referers.split(",") if ref.strip()]
 
 
 @lru_cache

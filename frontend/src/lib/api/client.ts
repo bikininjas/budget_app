@@ -1,19 +1,27 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-// Production backend URL - Custom domain (always HTTPS)
-const PRODUCTION_API_URL = 'https://backend-budget.novacat.fr';
+// ✅ SOLUTION RADICALE: Hardcoder les URLs par environnement
+// Plus de NEXT_PUBLIC_API_URL qui peut être HTTP/HTTPS incohérent
+const API_URLS = {
+  // Local development
+  localhost: 'http://localhost:8001',
+  '127.0.0.1': 'http://localhost:8001',
+  
+  // Production - TOUJOURS HTTPS avec domaine custom
+  production: 'https://backend-budget.novacat.fr',
+} as const;
 
-// Determine API URL dynamically
+// Determine API URL dynamically based on hostname ONLY
 function getApiBaseUrl(): string {
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   
-  // Local development - use env var or localhost
+  // Local development
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+    return API_URLS.localhost;
   }
   
-  // Production - use custom domain
-  return PRODUCTION_API_URL;
+  // Production - TOUJOURS HTTPS
+  return API_URLS.production;
 }
 
 export const api = axios.create({
