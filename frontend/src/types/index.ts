@@ -221,23 +221,21 @@ export interface Project {
   id: number;
   name: string;
   description: string | null;
-  budget: number | null;
-  start_date: string | null;
-  end_date: string | null;
+  target_amount: number;
+  current_amount: number;
+  deadline: string | null;
   is_active: boolean;
+  is_completed: boolean;
+  progress_percentage: number;
   created_at: string;
   updated_at: string;
-  total_spent?: number;
-  expense_count?: number;
 }
 
 export interface ProjectCreate {
   name: string;
   description?: string;
-  budget?: number;
-  start_date?: string;
-  end_date?: string;
-  is_active?: boolean;
+  target_amount: number;
+  deadline?: string;
 }
 
 export interface ProjectContribution {

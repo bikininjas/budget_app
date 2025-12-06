@@ -12,7 +12,7 @@ from app.core.database import Base
 class ChildExpense(Base):
     """
     Child expense model for tracking purchases made by dependent users.
-    
+
     Used for children/dependents with a monthly budget to track their spending.
     """
 
@@ -24,12 +24,14 @@ class ChildExpense(Base):
     purchase_date: Mapped[date] = mapped_column(
         Date, default=lambda: datetime.now(UTC).date(), nullable=False
     )
-    product_url: Mapped[str | None] = mapped_column(Text, nullable=True)  # Link for online purchases
+    product_url: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )  # Link for online purchases
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)  # Additional notes
-    
+
     # Foreign Keys
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )

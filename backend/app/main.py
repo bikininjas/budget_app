@@ -123,7 +123,7 @@ def create_application() -> FastAPI:
             )
 
         response = await call_next(request)
-        
+
         # ✅ CRITICAL FIX: Force HTTPS in Location headers from redirects
         http_scheme = "http://"
         https_scheme = "https://"

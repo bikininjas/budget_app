@@ -9,10 +9,14 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 class ChildExpenseBase(BaseModel):
     """Base schema for child expense."""
 
-    description: str = Field(..., min_length=1, max_length=500, description="Description of the purchase")
+    description: str = Field(
+        ..., min_length=1, max_length=500, description="Description of the purchase"
+    )
     amount: Decimal = Field(..., gt=0, decimal_places=2, description="Purchase amount")
     purchase_date: date = Field(default_factory=date.today, description="Date of purchase")
-    product_url: HttpUrl | str | None = Field(None, description="URL of the product if bought online")
+    product_url: HttpUrl | str | None = Field(
+        None, description="URL of the product if bought online"
+    )
     notes: str | None = Field(None, max_length=1000, description="Additional notes")
 
 
