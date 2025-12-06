@@ -1,38 +1,18 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-// ✅ SOLUTION RADICALE: Hardcoder les URLs par environnement
-// Plus de NEXT_PUBLIC_API_URL qui peut être HTTP/HTTPS incohérent
-const API_URLS = {
-  // Local development
-  localhost: 'http://localhost:8001',
-  '127.0.0.1': 'http://localhost:8001',
-  
-  // Production - TOUJOURS HTTPS avec domaine custom
-  production: 'https://backend-budget.novacat.fr',
-} as const;
-
-// Determine API URL dynamically based on hostname ONLY
+// ✅ SOLUTION ULTRA-RADICALE: TOUJOURS HTTPS EN PRODUCTION
+// Forcer HTTPS partout sauf localhost explicite
 function getApiBaseUrl(): string {
-  // Server-side (SSR): Always use production HTTPS
-  if (globalThis.window === undefined) {
-    // Check if we're in development (NODE_ENV)
-    if (process.env.NODE_ENV === 'development') {
-      return API_URLS.localhost;
+  // Client-side: Check if we're on localhost
+  if (globalThis.window !== undefined) {
+    const hostname = globalThis.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8001';
     }
-    // Production SSR: ALWAYS HTTPS
-    return API_URLS.production;
   }
   
-  // Client-side: Check hostname
-  const hostname = globalThis.location.hostname;
-  
-  // Local development
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return API_URLS.localhost;
-  }
-  
-  // Production client: ALWAYS HTTPS
-  return API_URLS.production;
+  // Server-side SSR or any production client: ALWAYS HTTPS
+  return 'https://backend-budget.novacat.fr';
 }
 
 export const api = axios.create({
