@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { PlusIcon, PencilIcon, TrashIcon, LinkIcon } from '@heroicons/react/24/outline';
+import { Plus, Pencil, Trash2, Link as LinkIcon } from 'lucide-react';
 import { childExpensesApi } from '@/lib/api/child-expenses';
 import { useAuth } from '@/contexts/auth-context';
 import type { ChildExpense, ChildExpenseCreate } from '@/types';
@@ -116,7 +116,7 @@ export default function EmelineBudgetPage() {
           }}
           className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
         >
-          <PlusIcon className="h-5 w-5" />
+          <Plus className="h-5 w-5" />
           Nouvelle dépense
         </button>
       </div>
@@ -248,7 +248,7 @@ export default function EmelineBudgetPage() {
                         }}
                         className="text-gray-400 hover:text-indigo-600"
                       >
-                        <PencilIcon className="h-5 w-5" />
+                        <Pencil className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => {
@@ -258,7 +258,7 @@ export default function EmelineBudgetPage() {
                         }}
                         className="text-gray-400 hover:text-red-600"
                       >
-                        <TrashIcon className="h-5 w-5" />
+                        <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
                   </div>
