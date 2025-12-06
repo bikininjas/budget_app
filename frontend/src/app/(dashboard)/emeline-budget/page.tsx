@@ -270,7 +270,7 @@ export default function EmelineBudgetPage() {
                   </div>
                   <div className="flex items-center gap-4 ml-4">
                     <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {expense.amount.toFixed(2)} €
+                      {Number(expense.amount).toFixed(2)} €
                     </span>
                     <div className="flex gap-2">
                       <button

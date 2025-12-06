@@ -54,7 +54,7 @@ export interface UserPasswordStatus {
 export interface ChildExpense {
   id: number;
   description: string;
-  amount: number;
+  amount: string | number;  // Decimal from backend returns as string
   purchase_date: string;
   product_url: string | null;
   notes: string | null;
@@ -74,7 +74,7 @@ export interface ChildExpenseCreate {
 
 export interface ChildExpenseUpdate {
   description?: string;
-  amount?: number;
+  amount?: string | number;  // Accept both string (from backend) and number (from form)
   purchase_date?: string;
   product_url?: string | null;
   notes?: string | null;
