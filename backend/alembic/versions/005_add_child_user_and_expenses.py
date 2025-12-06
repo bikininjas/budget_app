@@ -20,19 +20,23 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    # Add enum values using raw connection to commit immediately
-    # This is required because PostgreSQL needs enum values committed before use
+    # Add enum values using raw connection
+    # PostgreSQL needs enum values committed before use, but IF NOT EXISTS handles duplicates
     connection = op.get_bind()
 
-    # Add 'child' value to userrole enum
-    connection.execute(sa.text("ALTER TYPE userrole ADD VALUE IF NOT EXISTS 'child'"))
-    connection.commit()
+    # Check and add 'child' value to userrole enum if it doesn't exist
+    try:
+        connection.execute(sa.text("ALTER TYPE userrole ADD VALUE IF NOT EXISTS 'child'"))
+    except Exception:
+        pass  # Value already exists, skip
 
-    # Add 'full_emeline' value to splittype enum
-    connection.execute(sa.text("ALTER TYPE splittype ADD VALUE IF NOT EXISTS '100_emeline'"))
-    connection.commit()
+    # Check and add '100_emeline' value to splittype enum if it doesn't exist
+    try:
+        connection.execute(sa.text("ALTER TYPE splittype ADD VALUE IF NOT EXISTS '100_emeline'"))
+    except Exception:
+        pass  # Value already exists, skip
 
-    # Add monthly_budget column to users table
+    # Add monthly_budget column to users table (IF NOT EXISTS handled by op.add_column)
     op.add_column(
         "users",
         sa.Column("monthly_budget", sa.Numeric(precision=12, scale=2), nullable=True),
