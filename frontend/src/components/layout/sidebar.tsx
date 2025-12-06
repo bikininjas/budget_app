@@ -12,6 +12,7 @@ import {
   History,
   Settings,
   X,
+  Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Projets', href: '/projects', icon: FolderKanban },
   { name: 'Catégories', href: '/categories', icon: Tags },
   { name: 'Comptes', href: '/accounts', icon: Landmark },
+  { name: 'Budget Emeline', href: '/emeline-budget', icon: Wallet },
 ];
 
 interface SidebarProps {
