@@ -28,7 +28,7 @@ Voir le script `./scripts/fix-production-500.sh` pour les instructions détaill�
 
 ### Gestion des dépenses
 - **Dépenses** : Ajouter, modifier et supprimer des dépenses
-- **Assignation** : Attribuer chaque dépense à Marie ou Seb
+- **Assignation** : Attribuer chaque dépense à Marie, Seb ou Emeline
 - **Dépenses récurrentes** : Marquer les dépenses qui reviennent chaque mois
 - **Historique** : Vue mensuelle de toutes les dépenses avec tendances
 
@@ -37,11 +37,16 @@ Voir le script `./scripts/fix-production-500.sh` pour les instructions détaill�
 - **Fréquence** : Mensuel, trimestriel ou annuel
 - **Calcul automatique** : Conversion en montant mensuel équivalent
 
-### Comptes bancaires
-- Caisse d'Épargne Joint
-- Caisse d'Épargne Seb
-- Caisse d'Épargne Marie
-- N26 Seb
+### Gestion des comptes bancaires
+- **CRUD complet** : Créer, modifier et supprimer des comptes bancaires
+- **Types de comptes** : Compte courant, compte épargne, compte joint
+- **Suivi des soldes** : Balance initiale et solde courant pour chaque compte
+
+### Budget enfant (Emeline)
+- **Suivi des dépenses** : Emeline peut gérer ses propres achats
+- **Budget mensuel** : Paramétrable par les parents (admin)
+- **Graphiques dédiés** : Visualisation des dépenses et budget restant
+- **Contrôle parental** : Seuls les admins peuvent modifier le budget mensuel
 
 ### Répartition des dépenses
 - 50/50
@@ -49,13 +54,14 @@ Voir le script `./scripts/fix-production-500.sh` pour les instructions détaill�
 - 2/3 - 1/3
 - 100% Marie
 - 100% Seb
+- 100% Emeline
 
 ### Autres fonctionnalités
 - **Catégories** : Organisation des dépenses (Alimentation, Logement, Transport, etc.)
 - **Projets** : Suivi de budget pour des projets spécifiques (vacances, travaux...)
 - **Graphiques** : Visualisation des dépenses par mois et par catégorie
 - **Balance** : Calcul automatique de qui doit combien à qui
-- **Dark mode** : Interface adaptée au thème système
+- **Dark mode** : Interface adaptée au thème système avec excellent contraste
 - **Responsive** : Design adapté mobile et desktop
 
 ## 🛠️ Stack technique
@@ -69,17 +75,19 @@ Voir le script `./scripts/fix-production-500.sh` pour les instructions détaill�
 - **JWT** pour l'authentification
 
 ### Frontend
-- **Next.js 15** avec App Router
+- **Next.js 15.5.7** avec App Router
 - **React 19** avec TypeScript 5.7
 - **TanStack Query v5** pour la gestion des données
 - **Recharts** pour les graphiques
-- **Tailwind CSS** pour le styling
+- **Tailwind CSS** avec dark mode
 - **Lucide React** pour les icônes
 - **Bun** comme gestionnaire de packages
 
-### Infrastructure
-- **Docker** & **Docker Compose**
-- **Volume PostgreSQL** persistant
+### Infrastructure & Déploiement
+- **Google Cloud Run** (europe-west1)
+- **Neon.tech PostgreSQL** (production)
+- **GitHub Actions** pour CI/CD
+- **Docker** pour le build et développement local
 - Scripts de **backup/restore**
 
 ## 📁 Structure du projet
@@ -99,41 +107,62 @@ budget_app/
 ├── frontend/
 │   ├── src/
 │   │   ├── app/(dashboard)/     # Pages de l'app
+│   │   │   ├── dashboard/       # Tableau de bord
+│   │   │   ├── expenses/        # Gestion dépenses
+│   │   │   ├── budget/          # Charges fixes
+│   │   │   ├── accounts/        # Comptes bancaires
+│   │   │   ├── emeline-budget/  # Budget enfant
+│   │   │   ├── categories/      # Catégories
+│   │   │   └── projects/        # Projets
 │   │   ├── components/          # Composants React
 │   │   ├── contexts/            # Auth context
 │   │   ├── lib/api/             # Clients API
 │   │   └── types/               # Types TypeScript
 │   └── Dockerfile
 ├── scripts/
-│   ├── backup-db.sh             # Backup PostgreSQL
-│   ├── restore-db.sh            # Restore PostgreSQL
-│   └── migrate-to-cloud.sh      # Guide migration cloud
-└── docker-compose.yml
+│   ├── ci-*.sh                  # Scripts CI/CD
+│   ├── backup.sh                # Backup PostgreSQL
+│   ├── restore.sh               # Restore PostgreSQL
+│   └── check-emeline-user.sh    # Gestion utilisateur Emeline
+├── .github/workflows/
+│   └── deploy.yml               # CI/CD GitHub Actions
+└── docker-compose.dev.yml       # Dev local
 ```
 
 ## 🚀 Démarrage rapide
 
 ### Prérequis
 - Docker et Docker Compose
+- Fichier `.env` avec les variables nécessaires (voir section Sécurité)
 
-### Démarrage
+### Démarrage local
 
 ```bash
 # Cloner le repo
 git clone https://github.com/bikininjas/budget_app.git
 cd budget_app
 
-# Démarrer les services
-docker compose up -d
+# Créer le fichier .env avec POSTGRES_PASSWORD et SECRET_KEY
+cp .env.example .env  # Puis éditer avec vos valeurs
 
-# Exécuter les migrations
-docker compose exec backend alembic upgrade head
+# Démarrer les services en mode dev
+docker compose -f docker-compose.dev.yml up
+
+# Les migrations sont appliquées automatiquement au démarrage
 ```
 
 L'application sera accessible sur :
-- **Frontend** : http://localhost:3001
-- **Backend API** : http://localhost:8001
-- **Documentation API** : http://localhost:8001/docs
+- **Frontend** : http://localhost:3000
+- **Backend API** : http://localhost:8000
+- **Documentation API** : http://localhost:8000/docs
+
+### Production
+
+Déploiement automatique sur Google Cloud Run via GitHub Actions:
+- **Frontend** : https://budget.novacat.fr
+- **Backend** : https://backend-budget.novacat.fr
+
+Push sur `master` → Build → Deploy automatique
 
 ## 🔐 Sécurité
 
@@ -154,16 +183,17 @@ DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/
 
 ⚠️ **Ne jamais commiter le fichier `.env`** - il est dans `.gitignore`
 
-### Utilisateurs par défaut (développement)
+### Utilisateurs
 
-Les utilisateurs de test sont créés automatiquement lors de la première migration.
+Les utilisateurs sont créés automatiquement lors de la première migration.
 
-| Username | Rôle |
-|----------|------|
-| seb | admin |
-| marie | user |
+| Username | Rôle | Accès |
+|----------|------|-------|
+| seb | admin | Tous les accès + gestion budget enfant |
+| marie | user | Tous les accès sauf paramètres admin |
+| emeline | child | Accès limité à son propre budget |
 
-Le mot de passe par défaut est défini dans la migration seed et doit être changé en production.
+**Note**: En production, les mots de passe doivent être définis via la fonctionnalité "Set Password".
 
 ## 📊 API Documentation
 
@@ -179,9 +209,17 @@ Documentation Swagger interactive disponible sur `/docs`.
 | GET | /api/expenses/stats/history | Historique mensuel |
 | GET | /api/recurring-charges | Charges fixes |
 | GET | /api/recurring-charges/summary | Résumé budget |
-| GET | /api/categories | Catégories |
 | GET | /api/accounts | Comptes bancaires |
+| POST | /api/accounts | Créer un compte |
+| PUT | /api/accounts/{id} | Modifier un compte |
+| DELETE | /api/accounts/{id} | Supprimer un compte |
+| GET | /api/child-expenses | Dépenses enfant |
+| POST | /api/child-expenses | Créer dépense enfant |
+| GET | /api/child-expenses/summary | Résumé budget enfant |
+| GET | /api/categories | Catégories |
 | GET | /api/projects | Projets |
+| GET | /api/users | Liste utilisateurs (admin) |
+| PUT | /api/users/{id} | Modifier utilisateur (admin) |
 
 ## 💾 Backup & Restore
 
@@ -200,52 +238,58 @@ Documentation Swagger interactive disponible sur `/docs`.
 
 ## 🧪 Développement
 
-### Backend (sans Docker)
+### Développement local avec Docker
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -e ".[dev]"
+# Démarrer tous les services
+docker compose -f docker-compose.dev.yml up
 
-export DATABASE_URL="postgresql+asyncpg://user:pass@localhost:5432/budget_db"
-export SECRET_KEY="dev-secret-key"
-
-alembic upgrade head
-uvicorn app.main:app --reload --port 8001
+# Frontend: http://localhost:3000
+# Backend: http://localhost:8000
 ```
 
-### Frontend (sans Docker)
+### Scripts CI/CD locaux
+
+Avant de push, exécuter les vérifications CI:
 
 ```bash
-cd frontend
-bun install
-echo "NEXT_PUBLIC_API_URL=http://localhost:8001" > .env.local
-bun dev
+# Tout vérifier en une fois
+./scripts/ci-all.sh
+
+# Ou individuellement:
+./scripts/ci-backend-lint.sh      # Ruff check + format
+./scripts/ci-backend-test.sh      # Pytest (nécessite DB)
+./scripts/ci-frontend-lint.sh     # ESLint + TypeScript
+./scripts/ci-frontend-build.sh    # Build Next.js
+./scripts/ci-docker-build.sh      # Build Docker images
 ```
 
-### Linting
+### Linting manuel
 
 ```bash
 # Backend
-cd backend && ruff check . && ruff format .
+cd backend && ruff check --fix . && ruff format .
 
-# Frontend
-cd frontend && bun lint
+# Frontend  
+cd frontend && bun lint && bun run type-check
 ```
 
 ## 📝 Migrations
 
 ```bash
-# Créer une nouvelle migration
-docker compose exec backend alembic revision --autogenerate -m "description"
+# Créer une nouvelle migration (dev local)
+docker compose -f docker-compose.dev.yml exec backend alembic revision --autogenerate -m "description"
 
-# Appliquer les migrations
-docker compose exec backend alembic upgrade head
+# Appliquer les migrations (dev)
+docker compose -f docker-compose.dev.yml exec backend alembic upgrade head
 
-# Rollback
-docker compose exec backend alembic downgrade -1
+# Production (via Neon.tech)
+cd backend
+export DATABASE_URL='postgresql://...'  # URL Neon
+alembic upgrade head
 ```
+
+**Important**: Les migrations sont appliquées automatiquement au démarrage du backend en dev. En production, utiliser le script `./scripts/fix-production-500.sh` en cas de problème.
 
 ## 📜 Licence
 
