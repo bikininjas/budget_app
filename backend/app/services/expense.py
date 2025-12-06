@@ -251,10 +251,7 @@ class ExpenseService:
 
             # Get expenses for this month
             month_start = date(year, month, 1)
-            if month == 12:
-                month_end = date(year + 1, 1, 1)
-            else:
-                month_end = date(year, month + 1, 1)
+            month_end = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
 
             expenses_query = (
                 select(Expense)
@@ -299,25 +296,27 @@ class ExpenseService:
                 for cat in category_result.all()
             ]
 
-            history.append({
-                "year": year,
-                "month": month,
-                "total": float(row.total),
-                "count": row.count,
-                "categories": categories,
-                "expenses": [
-                    {
-                        "id": exp.id,
-                        "label": exp.label,
-                        "amount": float(exp.amount),
-                        "date": exp.date.isoformat(),
-                        "category_name": exp.category.name if exp.category else None,
-                        "category_color": exp.category.color if exp.category else None,
-                        "category_icon": exp.category.icon if exp.category else None,
-                        "is_recurring": exp.is_recurring,
-                    }
-                    for exp in expenses
-                ],
-            })
+            history.append(
+                {
+                    "year": year,
+                    "month": month,
+                    "total": float(row.total),
+                    "count": row.count,
+                    "categories": categories,
+                    "expenses": [
+                        {
+                            "id": exp.id,
+                            "label": exp.label,
+                            "amount": float(exp.amount),
+                            "date": exp.date.isoformat(),
+                            "category_name": exp.category.name if exp.category else None,
+                            "category_color": exp.category.color if exp.category else None,
+                            "category_icon": exp.category.icon if exp.category else None,
+                            "is_recurring": exp.is_recurring,
+                        }
+                        for exp in expenses
+                    ],
+                }
+            )
 
         return history

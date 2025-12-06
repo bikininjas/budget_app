@@ -2,6 +2,7 @@ import contextlib
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -9,12 +10,11 @@ from app.core.config import settings
 from app.core.database import Base, get_db
 from app.main import app
 
-# Create test database
-TEST_DATABASE_URL = settings.DATABASE_URL.replace(
-    settings.DATABASE_URL.split("/")[-1], "test_" + settings.DATABASE_URL.split("/")[-1]
-)
+# Use the database URL from settings (already configured for tests by ci script)
+# ci-backend-test-with-docker.sh sets DATABASE_URL to test database
+TEST_DATABASE_URL = settings.database_url
 
-engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+engine = create_async_engine(TEST_DATABASE_URL, echo=False, pool_pre_ping=True)
 TestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
@@ -24,20 +24,6 @@ async def override_get_db():
 
 
 app.dependency_overrides[get_db] = override_get_db
-
-
-@pytest.fixture(scope="session")
-def anyio_backend():
-    return "asyncio"
-
-
-@pytest.fixture(scope="session", autouse=True)
-async def setup_database():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest.fixture
@@ -56,7 +42,7 @@ async def db_session():
 async def auth_headers(client: AsyncClient, db_session: AsyncSession):
     """Get authentication headers for a test user."""
     from app.schemas.user import UserCreate
-    from app.services.user_service import UserService
+    from app.services.user import UserService
 
     user_service = UserService(db_session)
 
@@ -69,7 +55,8 @@ async def auth_headers(client: AsyncClient, db_session: AsyncSession):
     )
 
     with contextlib.suppress(Exception):
-        await user_service.create_user(user_data)
+        await user_service.create(user_data)
+        await db_session.commit()
 
     # Login
     response = await client.post(

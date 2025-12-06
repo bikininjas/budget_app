@@ -45,9 +45,7 @@ class RecurringChargeService:
         await self.db.refresh(charge)
         return charge
 
-    async def update(
-        self, charge_id: int, data: RecurringChargeUpdate
-    ) -> RecurringCharge | None:
+    async def update(self, charge_id: int, data: RecurringChargeUpdate) -> RecurringCharge | None:
         """Update a recurring charge."""
         charge = await self.get_by_id(charge_id)
         if not charge:
@@ -91,9 +89,7 @@ class RecurringChargeService:
         charges_with_monthly: list[dict] = []
 
         for charge in charges:
-            monthly_amount = self.calculate_monthly_amount(
-                charge.amount, charge.frequency
-            )
+            monthly_amount = self.calculate_monthly_amount(charge.amount, charge.frequency)
             total_monthly += monthly_amount
 
             category_name = charge.category.name if charge.category else "Sans catégorie"
@@ -101,16 +97,16 @@ class RecurringChargeService:
                 category_totals[category_name] = Decimal("0")
             category_totals[category_name] += monthly_amount
 
-            charges_with_monthly.append({
-                "charge": charge,
-                "monthly_amount": round(monthly_amount, 2),
-            })
+            charges_with_monthly.append(
+                {
+                    "charge": charge,
+                    "monthly_amount": round(monthly_amount, 2),
+                }
+            )
 
         by_category = [
             {"category": cat, "total": round(amount, 2)}
-            for cat, amount in sorted(
-                category_totals.items(), key=lambda x: x[1], reverse=True
-            )
+            for cat, amount in sorted(category_totals.items(), key=lambda x: x[1], reverse=True)
         ]
 
         return {

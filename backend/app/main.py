@@ -1,5 +1,6 @@
 """FastAPI application entry point."""
 
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -9,6 +10,13 @@ from fastapi.responses import JSONResponse
 
 from app.api.routes import accounts, auth, categories, expenses, projects, recurring_charges, users
 from app.core.config import settings
+
+# Configure logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # Constants
 DOCS_URL = "/api/docs"
@@ -74,6 +82,47 @@ def create_application() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # HTTPS redirect middleware (force HTTPS in production)
+    @app.middleware("http")
+    async def force_https_redirect(request: Request, call_next):
+        """Force HTTPS redirect and add security headers."""
+        # Log ALL requests with full details
+        forwarded_proto = request.headers.get("X-Forwarded-Proto", "")
+        forwarded_for = request.headers.get("X-Forwarded-For", "")
+        host = request.headers.get("Host", "")
+        referer = request.headers.get("Referer", "")
+        
+        logger.info(
+            f"📥 REQUEST: {request.method} {request.url.path} | "
+            f"Host={host} | Proto={forwarded_proto} | "
+            f"IP={forwarded_for} | Referer={referer}"
+        )
+        
+        # Check if request is HTTP (Cloud Run sets X-Forwarded-Proto)
+        if forwarded_proto == "http" and not _is_public_endpoint(request.url.path):
+            logger.warning(f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}")
+            # Redirect HTTP to HTTPS
+            url = str(request.url).replace("http://", "https://", 1)
+            return JSONResponse(
+                status_code=status.HTTP_308_PERMANENT_REDIRECT,
+                headers={"Location": url},
+                content={"detail": "HTTPS required", "redirect": url}
+            )
+        
+        response = await call_next(request)
+        
+        # Add strict security headers to ALL responses
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        # CSP to block mixed content
+        response.headers["Content-Security-Policy"] = "upgrade-insecure-requests; block-all-mixed-content"
+        
+        logger.info(f"📤 RESPONSE: {response.status_code} for {request.url.path}")
+        return response
+
     # IP and Referer filtering middleware (security layer)
     @app.middleware("http")
     async def ip_referer_filter(request: Request, call_next):
@@ -81,23 +130,23 @@ def create_application() -> FastAPI:
         # Skip filtering for public endpoints
         if _is_public_endpoint(request.url.path):
             return await call_next(request)
-        
+
         # Skip if no IP/Referer filtering configured
         if not settings.allowed_ips_list and not settings.allowed_referers_list:
             return await call_next(request)
-        
+
         # Get client IP
         client_ip = _get_client_ip(request)
-        
+
         # Check IP whitelist
         if _is_ip_allowed(client_ip, settings.allowed_ips_list):
             return await call_next(request)
-        
+
         # Check Referer whitelist
         referer = request.headers.get("Referer", "")
         if _is_referer_allowed(referer, settings.allowed_referers_list):
             return await call_next(request)
-        
+
         # Deny access if restrictions exist but none matched
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -111,7 +160,7 @@ def create_application() -> FastAPI:
         # Skip API key check if not configured or for public endpoints
         if not settings.api_key or _is_public_endpoint(request.url.path):
             return await call_next(request)
-        
+
         # Check X-API-Key header
         api_key = request.headers.get("X-API-Key")
         if api_key != settings.api_key:
@@ -119,7 +168,7 @@ def create_application() -> FastAPI:
                 status_code=status.HTTP_403_FORBIDDEN,
                 content={"detail": "Invalid or missing API key"},
             )
-        
+
         return await call_next(request)
 
     # Include routers
@@ -135,6 +184,32 @@ def create_application() -> FastAPI:
     async def health_check() -> dict:
         """Health check endpoint."""
         return {"status": "healthy", "version": settings.app_version}
+
+    @app.get("/api/debug/config")
+    async def debug_config(request: Request) -> dict:
+        """Debug endpoint to check configuration and request details."""
+        return {
+            "request": {
+                "url": str(request.url),
+                "scheme": request.url.scheme,
+                "host": request.headers.get("Host"),
+                "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
+                "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+                "referer": request.headers.get("Referer"),
+                "user_agent": request.headers.get("User-Agent"),
+            },
+            "config": {
+                "cors_origins": settings.cors_origins,
+                "allowed_ips": settings.allowed_ips,
+                "allowed_referers": settings.allowed_referers,
+                "frontend_url": settings.frontend_url,
+            },
+            "security": {
+                "hsts_enabled": True,
+                "https_only": True,
+                "csp_enabled": True,
+            }
+        }
 
     return app
 

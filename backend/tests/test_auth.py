@@ -6,11 +6,11 @@ from httpx import AsyncClient
 async def test_login_success(client: AsyncClient, db_session):
     """Test successful login."""
     from app.schemas.user import UserCreate
-    from app.services.user_service import UserService
+    from app.services.user import UserService
 
     # Create user
     user_service = UserService(db_session)
-    await user_service.create_user(
+    await user_service.create(
         UserCreate(
             email="login_test@example.com",
             username="login_test",
@@ -18,6 +18,7 @@ async def test_login_success(client: AsyncClient, db_session):
             password="password123",
         )
     )
+    await db_session.commit()
 
     # Login
     response = await client.post(

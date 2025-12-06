@@ -30,7 +30,9 @@ async def send_email(to_email: str, subject: str, html_content: str) -> bool:
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = f"{settings.smtp_from_name} <{settings.smtp_from_email or settings.smtp_user}>"
+        msg["From"] = (
+            f"{settings.smtp_from_name} <{settings.smtp_from_email or settings.smtp_user}>"
+        )
         msg["To"] = to_email
 
         # Create HTML part
@@ -42,9 +44,7 @@ async def send_email(to_email: str, subject: str, html_content: str) -> bool:
             server.starttls()
             server.login(settings.smtp_user, settings.smtp_password)
             server.sendmail(
-                settings.smtp_from_email or settings.smtp_user,
-                to_email,
-                msg.as_string()
+                settings.smtp_from_email or settings.smtp_user, to_email, msg.as_string()
             )
 
         logger.info(f"Email sent successfully to {to_email}")
@@ -140,23 +140,23 @@ async def send_magic_link_email(to_email: str, magic_link: str, user_name: str) 
     </body>
     </html>
     """
-    
+
     return await send_email(to_email, subject, html_content)
 
 
 async def send_password_reset_email(to_email: str, reset_link: str, user_name: str) -> bool:
     """Send a password reset email.
-    
+
     Args:
         to_email: Recipient email address
         reset_link: The password reset link URL
         user_name: User's display name
-        
+
     Returns:
         True if email was sent successfully, False otherwise
     """
     subject = "DuoBudget - Réinitialisation de mot de passe"
-    
+
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -229,5 +229,5 @@ async def send_password_reset_email(to_email: str, reset_link: str, user_name: s
     </body>
     </html>
     """
-    
+
     return await send_email(to_email, subject, html_content)

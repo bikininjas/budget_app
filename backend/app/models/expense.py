@@ -40,12 +40,11 @@ class Expense(Base):
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     date: Mapped[date] = mapped_column(Date, default=lambda: datetime.now(UTC).date())
     frequency: Mapped[Frequency] = mapped_column(
-        Enum(Frequency, values_callable=lambda x: [e.value for e in x]),
-        default=Frequency.one_time
+        Enum(Frequency, values_callable=lambda x: [e.value for e in x]), default=Frequency.one_time
     )
     split_type: Mapped[SplitType] = mapped_column(
         Enum(SplitType, values_callable=lambda x: [e.value for e in x]),
-        default=SplitType.fifty_fifty
+        default=SplitType.fifty_fifty,
     )
 
     # Foreign Keys

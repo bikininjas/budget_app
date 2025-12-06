@@ -91,8 +91,12 @@ jobs:
 
       - name: Deploy Backend to Cloud Run
         run: |
-          # ✅ Deploy with IP restriction via environment variable
-          # Backend middleware will filter requests by IP and Referer
+          # ✅ Deploy with IP restriction + HTTPS enforcement + detailed logging
+          # Backend middleware will:
+          # - Force HTTPS redirect for all non-public endpoints
+          # - Filter requests by IP and Referer
+          # - Add strict security headers (HSTS, CSP)
+          # - Log all requests with full details
           # Use ^@^ delimiter to handle special characters (commas, dots) in env vars
           
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
@@ -107,7 +111,9 @@ jobs:
             --concurrency ${{ vars.CONCURRENCY || '80' }} \
             --timeout ${{ vars.TIMEOUT || '300' }} \
             --set-secrets="DATABASE_URL=${{ env.DATABASE_URL_SECRET }}:latest,SECRET_KEY=${{ env.SECRET_KEY_SECRET }}:latest,SMTP_HOST=smtp-host:latest,SMTP_PORT=smtp-port:latest,SMTP_USER=smtp-user:latest,SMTP_PASSWORD=smtp-password:latest,SMTP_FROM_EMAIL=smtp-from-email:latest,SMTP_FROM_NAME=smtp-from-name:latest,FRONTEND_URL=frontend-url:latest" \
-            --set-env-vars="^@^CORS_ORIGINS=*@ALLOWED_IPS=82.65.136.32@ALLOWED_REFERERS=budget.novacat.fr,localhost"
+            --set-env-vars="^@^CORS_ORIGINS=*@ALLOWED_IPS=82.65.136.32@ALLOWED_REFERERS=budget.novacat.fr,localhost" \
+            --ingress=all \
+            --vpc-egress=private-ranges-only
 
       - name: Get Backend URL
         id: backend-url
