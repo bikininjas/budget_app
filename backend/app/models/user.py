@@ -1,9 +1,10 @@
 """User model for authentication and user management."""
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from enum import Enum as PyEnum
 
-from sqlalchemy import Boolean, DateTime, Enum, String
+from sqlalchemy import Boolean, DateTime, Enum, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -14,6 +15,7 @@ class UserRole(str, PyEnum):
 
     admin = "admin"
     user = "user"
+    child = "child"  # For dependent users like Emeline with limited budget access
 
 
 class User(Base):
@@ -31,6 +33,9 @@ class User(Base):
         Boolean, default=False
     )  # True when user has set their own password
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.user)
+    monthly_budget: Mapped[Decimal | None] = mapped_column(
+        Numeric(12, 2), nullable=True, default=None
+    )  # Monthly budget for child users, can be updated each month
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
@@ -49,6 +54,9 @@ class User(Base):
     )
     project_contributions: Mapped[list["ProjectContribution"]] = relationship(  # noqa: F821
         "ProjectContribution", back_populates="user"
+    )
+    child_expenses: Mapped[list["ChildExpense"]] = relationship(  # noqa: F821
+        "ChildExpense", back_populates="user"
     )
 
     def __repr__(self) -> str:
