@@ -212,32 +212,6 @@ def create_application() -> FastAPI:
         """Health check endpoint."""
         return {"status": "healthy", "version": settings.app_version}
 
-    @app.get("/api/debug/config")
-    async def debug_config(request: Request) -> dict:
-        """Debug endpoint to check configuration and request details."""
-        return {
-            "request": {
-                "url": str(request.url),
-                "scheme": request.url.scheme,
-                "host": request.headers.get("Host"),
-                "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
-                "x_forwarded_for": request.headers.get("X-Forwarded-For"),
-                "referer": request.headers.get("Referer"),
-                "user_agent": request.headers.get("User-Agent"),
-            },
-            "config": {
-                "cors_origins": settings.cors_origins,
-                "allowed_ips": settings.allowed_ips,
-                "allowed_referers": settings.allowed_referers,
-                "frontend_url": settings.frontend_url,
-            },
-            "security": {
-                "hsts_enabled": True,
-                "https_only": True,
-                "csp_enabled": True,
-            },
-        }
-
     return app
 
 

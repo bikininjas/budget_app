@@ -6,13 +6,9 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const proto = request.headers.get('x-forwarded-proto') || 'http';
   
-  // Log pour debug
-  console.log(`[MIDDLEWARE] ${request.method} ${request.url} | Host: ${hostname} | Proto: ${proto}`);
-  
   // If not localhost and not HTTPS, redirect
   if (!hostname.includes('localhost') && proto !== 'https') {
     const httpsUrl = request.url.replace('http://', 'https://');
-    console.log(`[MIDDLEWARE] 🚨 Redirecting HTTP to HTTPS: ${httpsUrl}`);
     return NextResponse.redirect(httpsUrl, 308);
   }
   
