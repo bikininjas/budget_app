@@ -68,6 +68,7 @@ def create_application() -> FastAPI:
         redoc_url=REDOC_URL,
         openapi_url=OPENAPI_URL,
         lifespan=lifespan,
+        redirect_slashes=False,  # ✅ CRITICAL: Disable auto-redirect to prevent HTTP redirects
     )
 
     # Configure CORS - Support wildcard for network access
@@ -103,7 +104,9 @@ def create_application() -> FastAPI:
                 f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}"
             )
             # Redirect HTTP to HTTPS
-            url = str(request.url).replace("http://", "https://", 1)
+            http_scheme = "http://"
+            https_scheme = "https://"
+            url = str(request.url).replace(http_scheme, https_scheme, 1)
             return JSONResponse(
                 status_code=status.HTTP_308_PERMANENT_REDIRECT,
                 headers={"Location": url},
@@ -111,6 +114,15 @@ def create_application() -> FastAPI:
             )
 
         response = await call_next(request)
+        
+        # ✅ CRITICAL FIX: Force HTTPS in Location headers from redirects
+        http_scheme = "http://"
+        https_scheme = "https://"
+        if "Location" in response.headers:
+            location = response.headers["Location"]
+            if location.startswith(http_scheme):
+                logger.warning(f"🔧 Fixing HTTP redirect to HTTPS: {location}")
+                response.headers["Location"] = location.replace(http_scheme, https_scheme, 1)
 
         # Add strict security headers to ALL responses
         response.headers["Strict-Transport-Security"] = (
