@@ -1,6 +1,7 @@
 """User schemas for authentication and user management."""
 
 from datetime import datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -37,6 +38,7 @@ class UserUpdate(BaseModel):
     full_name: str | None = Field(None, min_length=1, max_length=255)
     password: str | None = Field(None, min_length=8, max_length=100)
     is_active: bool | None = None
+    monthly_budget: Decimal | None = Field(None, ge=0, decimal_places=2)
 
 
 class UserResponse(BaseModel):
@@ -48,6 +50,7 @@ class UserResponse(BaseModel):
     full_name: str
     is_active: bool
     role: UserRole
+    monthly_budget: Decimal | None = None
     created_at: datetime
     updated_at: datetime
 

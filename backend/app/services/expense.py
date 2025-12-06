@@ -196,19 +196,22 @@ class ExpenseService:
                 user2_paid += amount
 
             # Calculate who should pay based on split type
-            if expense.split_type == SplitType.EQUAL:
+            if expense.split_type == SplitType.fifty_fifty:
                 user1_should_pay += amount / 2
                 user2_should_pay += amount / 2
-            elif expense.split_type == SplitType.ONE_THIRD_TWO_THIRDS:
+            elif expense.split_type == SplitType.one_third_two_thirds:
                 user1_should_pay += amount / 3
                 user2_should_pay += amount * 2 / 3
-            elif expense.split_type == SplitType.TWO_THIRDS_ONE_THIRD:
+            elif expense.split_type == SplitType.two_thirds_one_third:
                 user1_should_pay += amount * 2 / 3
                 user2_should_pay += amount / 3
-            elif expense.split_type == SplitType.FULL_SEB:
+            elif expense.split_type == SplitType.full_seb:
                 user1_should_pay += amount
-            elif expense.split_type == SplitType.FULL_MARIE:
+            elif expense.split_type == SplitType.full_marie:
                 user2_should_pay += amount
+            elif expense.split_type == SplitType.full_emeline:
+                # Emeline's expenses don't affect Marie/Seb balance
+                pass
 
         return {
             "user1_paid": user1_paid,

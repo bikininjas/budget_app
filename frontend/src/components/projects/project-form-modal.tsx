@@ -12,10 +12,10 @@ import { Project } from '@/types';
 const projectSchema = z.object({
   name: z.string().min(1, 'Nom requis'),
   description: z.string().optional(),
-  budget: z.coerce.number().positive().optional().nullable(),
-  start_date: z.string().optional().nullable(),
-  end_date: z.string().optional().nullable(),
+  target_amount: z.coerce.number().positive('Montant cible requis'),
+  deadline: z.string().optional().nullable(),
   is_active: z.boolean().default(true),
+  is_completed: z.boolean().default(false),
 });
 
 type ProjectFormData = z.infer<typeof projectSchema>;
@@ -44,10 +44,10 @@ export function ProjectFormModal({
     defaultValues: {
       name: '',
       description: '',
-      budget: null,
-      start_date: null,
-      end_date: null,
+      target_amount: 0,
+      deadline: null,
       is_active: true,
+      is_completed: false,
     },
   });
 
@@ -56,19 +56,19 @@ export function ProjectFormModal({
       reset({
         name: project.name,
         description: project.description || '',
-        budget: project.budget ? Number(project.budget) : null,
-        start_date: project.start_date?.split('T')[0] || null,
-        end_date: project.end_date?.split('T')[0] || null,
+        target_amount: project.target_amount,
+        deadline: project.deadline?.split('T')[0] || null,
         is_active: project.is_active,
+        is_completed: project.is_completed,
       });
     } else {
       reset({
         name: '',
         description: '',
-        budget: null,
-        start_date: null,
-        end_date: null,
+        target_amount: 0,
+        deadline: null,
         is_active: true,
+        is_completed: false,
       });
     }
   }, [project, reset]);
@@ -78,9 +78,8 @@ export function ProjectFormModal({
       projectsApi.create({
         name: data.name,
         description: data.description,
-        budget: data.budget || undefined,
-        start_date: data.start_date || undefined,
-        end_date: data.end_date || undefined,
+        target_amount: data.target_amount,
+        deadline: data.deadline || undefined,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -93,10 +92,10 @@ export function ProjectFormModal({
       projectsApi.update(project!.id, {
         name: data.name,
         description: data.description,
-        budget: data.budget || undefined,
-        start_date: data.start_date || undefined,
-        end_date: data.end_date || undefined,
+        target_amount: data.target_amount,
+        deadline: data.deadline || undefined,
         is_active: data.is_active,
+        is_completed: data.is_completed,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -158,47 +157,56 @@ export function ProjectFormModal({
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Budget (€)
+              Montant cible (€) *
             </label>
             <input
-              {...register('budget')}
+              {...register('target_amount')}
               type="number"
               step="0.01"
               className="input"
               placeholder="0.00"
             />
+            {errors.target_amount && (
+              <p className="text-sm text-danger-500 mt-1">
+                {errors.target_amount.message}
+              </p>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Date début
-              </label>
-              <input
-                {...register('start_date')}
-                type="date"
-                className="input"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Date fin
-              </label>
-              <input {...register('end_date')} type="date" className="input" />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Date limite
+            </label>
+            <input
+              {...register('deadline')}
+              type="date"
+              className="input"
+            />
           </div>
 
           {isEditing && (
-            <div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  {...register('is_active')}
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm text-slate-700">Projet actif</span>
-              </label>
-            </div>
+            <>
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    {...register('is_active')}
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-slate-700">Projet actif</span>
+                </label>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    {...register('is_completed')}
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-slate-700">Projet terminé</span>
+                </label>
+              </div>
+            </>
           )}
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">

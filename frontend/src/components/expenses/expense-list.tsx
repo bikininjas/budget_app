@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Trash2, ChevronLeft, ChevronRight, Receipt, RefreshCcw } from 'lucide-react';
 import { expensesApi } from '@/lib/api';
 import { Expense } from '@/types';
-import { formatCurrency, formatDateShort, SPLIT_TYPE_LABELS } from '@/lib/utils';
+import { formatCurrency, formatDateShort, getExpenseSplitDescription } from '@/lib/utils';
 import { ExpenseFilters, type ExpenseFiltersType } from './expense-filters';
 import { ExpenseFormModal } from './expense-form-modal';
 
@@ -172,7 +172,11 @@ export function ExpenseList() {
                         </span>
                       </td>
                       <td className="p-4 text-sm text-slate-600 dark:text-slate-300">
-                        {SPLIT_TYPE_LABELS[expense.split_type] || expense.split_type}
+                        {getExpenseSplitDescription(
+                          expense.split_type,
+                          expense.assigned_user_name || '',
+                          Number(expense.amount)
+                        )}
                       </td>
                       <td className="p-4 text-right font-semibold text-slate-900 dark:text-white">
                         {formatCurrency(Number(expense.amount))}
@@ -241,7 +245,11 @@ export function ExpenseList() {
                       {expense.assigned_user_name || 'N/A'}
                     </span>
                     <span className="px-2 py-0.5 rounded text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                      {SPLIT_TYPE_LABELS[expense.split_type] || expense.split_type}
+                      {getExpenseSplitDescription(
+                        expense.split_type,
+                        expense.assigned_user_name || '',
+                        Number(expense.amount)
+                      )}
                     </span>
                     {expense.project_name && (
                       <span className="text-xs bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded">

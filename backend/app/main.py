@@ -8,7 +8,16 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import accounts, auth, categories, expenses, projects, recurring_charges, users
+from app.api.routes import (
+    accounts,
+    auth,
+    categories,
+    child_expenses,
+    expenses,
+    projects,
+    recurring_charges,
+    users,
+)
 from app.core.config import settings
 
 # Configure logging
@@ -114,7 +123,7 @@ def create_application() -> FastAPI:
             )
 
         response = await call_next(request)
-        
+
         # ✅ CRITICAL FIX: Force HTTPS in Location headers from redirects
         http_scheme = "http://"
         https_scheme = "https://"
@@ -194,6 +203,7 @@ def create_application() -> FastAPI:
     app.include_router(categories.router, prefix="/api")
     app.include_router(accounts.router, prefix="/api")
     app.include_router(expenses.router, prefix="/api")
+    app.include_router(child_expenses.router, prefix="/api")
     app.include_router(projects.router, prefix="/api")
     app.include_router(recurring_charges.router, prefix="/api")
 

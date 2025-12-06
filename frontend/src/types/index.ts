@@ -5,7 +5,8 @@ export interface User {
   username: string;
   full_name: string;
   is_active: boolean;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'child';
+  monthly_budget: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -15,7 +16,8 @@ export interface UserCreate {
   username: string;
   full_name: string;
   password: string;
-  role?: 'admin' | 'user';
+  role?: 'admin' | 'user' | 'child';
+  monthly_budget?: number;
 }
 
 export interface UserLogin {
@@ -46,6 +48,46 @@ export interface UserPasswordStatus {
   email: string;
   password_set: boolean;
   user_exists: boolean;
+}
+
+// Child Expense types
+export interface ChildExpense {
+  id: number;
+  description: string;
+  amount: number;
+  purchase_date: string;
+  product_url: string | null;
+  notes: string | null;
+  user_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChildExpenseCreate {
+  description: string;
+  amount: number;
+  purchase_date: string;
+  product_url?: string | null;
+  notes?: string | null;
+  user_id: number;
+}
+
+export interface ChildExpenseUpdate {
+  description?: string;
+  amount?: number;
+  purchase_date?: string;
+  product_url?: string | null;
+  notes?: string | null;
+}
+
+export interface ChildExpenseSummary {
+  user_id: number;
+  username: string;
+  monthly_budget: number | null;
+  total_spent: number;
+  remaining_budget: number | null;
+  expense_count: number;
+  current_month: string;
 }
 
 // Account types
@@ -179,23 +221,21 @@ export interface Project {
   id: number;
   name: string;
   description: string | null;
-  budget: number | null;
-  start_date: string | null;
-  end_date: string | null;
+  target_amount: number;
+  current_amount: number;
+  deadline: string | null;
   is_active: boolean;
+  is_completed: boolean;
+  progress_percentage: number;
   created_at: string;
   updated_at: string;
-  total_spent?: number;
-  expense_count?: number;
 }
 
 export interface ProjectCreate {
   name: string;
   description?: string;
-  budget?: number;
-  start_date?: string;
-  end_date?: string;
-  is_active?: boolean;
+  target_amount: number;
+  deadline?: string;
 }
 
 export interface ProjectContribution {

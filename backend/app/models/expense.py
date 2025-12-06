@@ -18,6 +18,7 @@ class SplitType(str, PyEnum):
     two_thirds_one_third = "67_33"  # 2/3 - 1/3 split
     full_marie = "100_marie"  # 100% Marie
     full_seb = "100_seb"  # 100% Seb
+    full_emeline = "100_emeline"  # 100% Emeline
 
 
 class Frequency(str, PyEnum):
