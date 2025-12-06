@@ -68,7 +68,7 @@ def create_application() -> FastAPI:
         redoc_url=REDOC_URL,
         openapi_url=OPENAPI_URL,
         lifespan=lifespan,
-        redirect_slashes=False,  # ✅ CRITICAL: Disable auto-redirect to prevent HTTP redirects
+        # redirect_slashes=True by default - middleware rewrites Location headers to HTTPS
     )
 
     # Configure CORS - Support wildcard for network access
