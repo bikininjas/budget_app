@@ -1,7 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { api } from '@/lib/api/client';
+
+interface BackendRequest {
+  url: string;
+  scheme: string;
+  host: string;
+  x_forwarded_proto?: string;
+  x_forwarded_for?: string;
+  referer?: string;
+  user_agent?: string;
+}
+
+interface BackendConfig {
+  cors_origins: string;
+  allowed_ips: string;
+  allowed_referers: string;
+  frontend_url: string;
+}
+
+interface BackendSecurity {
+  hsts_enabled: boolean;
+  https_only: boolean;
+  csp_enabled: boolean;
+}
 
 interface DebugInfo {
   client: {
@@ -15,9 +39,9 @@ interface DebugInfo {
     fullURL: string;
   };
   backend?: {
-    request: any;
-    config: any;
-    security: any;
+    request: BackendRequest;
+    config: BackendConfig;
+    security: BackendSecurity;
   };
   errors?: string[];
 }
@@ -29,9 +53,9 @@ export default function DebugPage() {
   useEffect(() => {
     const info: DebugInfo = {
       client: {
-        hostname: window.location.hostname,
-        protocol: window.location.protocol,
-        fullUrl: window.location.href,
+        hostname: globalThis.location.hostname,
+        protocol: globalThis.location.protocol,
+        fullUrl: globalThis.location.href,
         isSSR: false,
       },
       api: {
@@ -149,8 +173,8 @@ export default function DebugPage() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4 text-red-600">❌ Errors</h2>
             <div className="space-y-2 font-mono text-sm text-red-700">
-              {debugInfo.errors.map((error, idx) => (
-                <div key={idx}>{error}</div>
+              {debugInfo.errors.map((error) => (
+                <div key={error}>{error}</div>
               ))}
             </div>
           </div>
@@ -160,10 +184,10 @@ export default function DebugPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
           <h2 className="text-xl font-semibold mb-4 text-blue-600">📋 What to Check</h2>
           <ul className="list-disc list-inside space-y-2 text-sm">
-            <li><strong>All HTTPS should be ✅</strong> - If any is ❌, there's the problem!</li>
+            <li><strong>All HTTPS should be ✅</strong> - If any is ❌, there&apos;s the problem!</li>
             <li><strong>Client Protocol:</strong> Should be https:// (not http://)</li>
             <li><strong>API Base URL:</strong> Should start with https://backend-budget.novacat.fr</li>
-            <li><strong>X-Forwarded-Proto:</strong> Should be 'https' on backend</li>
+            <li><strong>X-Forwarded-Proto:</strong> Should be &apos;https&apos; on backend</li>
             <li><strong>HSTS/CSP:</strong> Should be enabled to block mixed content</li>
           </ul>
         </div>
@@ -171,27 +195,27 @@ export default function DebugPage() {
         {/* Actions */}
         <div className="mt-6 space-x-4">
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             🔄 Refresh Debug Info
           </button>
           <button
             onClick={() => {
-              if (window.confirm('Clear cache and reload?')) {
-                window.location.reload();
+              if (globalThis.confirm('Clear cache and reload?')) {
+                globalThis.location.reload();
               }
             }}
             className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
           >
             🗑️ Clear Cache & Reload
           </button>
-          <a
+          <Link
             href="/"
             className="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
           >
             🏠 Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

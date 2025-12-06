@@ -14,7 +14,7 @@ const API_URLS = {
 // Determine API URL dynamically based on hostname ONLY
 function getApiBaseUrl(): string {
   // Server-side (SSR): Always use production HTTPS
-  if (typeof window === 'undefined') {
+  if (globalThis.window === undefined) {
     // Check if we're in development (NODE_ENV)
     if (process.env.NODE_ENV === 'development') {
       return API_URLS.localhost;
@@ -24,7 +24,7 @@ function getApiBaseUrl(): string {
   }
   
   // Client-side: Check hostname
-  const hostname = window.location.hostname;
+  const hostname = globalThis.location.hostname;
   
   // Local development
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -52,8 +52,8 @@ api.interceptors.request.use(
       config.headers['X-API-Key'] = apiKey;
     }
     
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token');
+    if (globalThis.window !== undefined) {
+      const token = globalThis.localStorage.getItem('access_token');
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -70,9 +70,9 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('access_token');
-        window.location.href = '/login';
+      if (globalThis.window !== undefined) {
+        globalThis.localStorage.removeItem('access_token');
+        globalThis.location.href = '/login';
       }
     }
     return Promise.reject(error);

@@ -14,8 +14,7 @@ from app.core.config import settings
 # Configure logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 # Constants
@@ -91,35 +90,41 @@ def create_application() -> FastAPI:
         forwarded_for = request.headers.get("X-Forwarded-For", "")
         host = request.headers.get("Host", "")
         referer = request.headers.get("Referer", "")
-        
+
         logger.info(
             f"📥 REQUEST: {request.method} {request.url.path} | "
             f"Host={host} | Proto={forwarded_proto} | "
             f"IP={forwarded_for} | Referer={referer}"
         )
-        
+
         # Check if request is HTTP (Cloud Run sets X-Forwarded-Proto)
         if forwarded_proto == "http" and not _is_public_endpoint(request.url.path):
-            logger.warning(f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}")
+            logger.warning(
+                f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}"
+            )
             # Redirect HTTP to HTTPS
             url = str(request.url).replace("http://", "https://", 1)
             return JSONResponse(
                 status_code=status.HTTP_308_PERMANENT_REDIRECT,
                 headers={"Location": url},
-                content={"detail": "HTTPS required", "redirect": url}
+                content={"detail": "HTTPS required", "redirect": url},
             )
-        
+
         response = await call_next(request)
-        
+
         # Add strict security headers to ALL responses
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains; preload"
+        )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         # CSP to block mixed content
-        response.headers["Content-Security-Policy"] = "upgrade-insecure-requests; block-all-mixed-content"
-        
+        response.headers["Content-Security-Policy"] = (
+            "upgrade-insecure-requests; block-all-mixed-content"
+        )
+
         logger.info(f"📤 RESPONSE: {response.status_code} for {request.url.path}")
         return response
 
@@ -208,7 +213,7 @@ def create_application() -> FastAPI:
                 "hsts_enabled": True,
                 "https_only": True,
                 "csp_enabled": True,
-            }
+            },
         }
 
     return app

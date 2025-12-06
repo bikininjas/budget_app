@@ -112,8 +112,7 @@ jobs:
             --timeout ${{ vars.TIMEOUT || '300' }} \
             --set-secrets="DATABASE_URL=${{ env.DATABASE_URL_SECRET }}:latest,SECRET_KEY=${{ env.SECRET_KEY_SECRET }}:latest,SMTP_HOST=smtp-host:latest,SMTP_PORT=smtp-port:latest,SMTP_USER=smtp-user:latest,SMTP_PASSWORD=smtp-password:latest,SMTP_FROM_EMAIL=smtp-from-email:latest,SMTP_FROM_NAME=smtp-from-name:latest,FRONTEND_URL=frontend-url:latest" \
             --set-env-vars="^@^CORS_ORIGINS=*@ALLOWED_IPS=82.65.136.32@ALLOWED_REFERERS=budget.novacat.fr,localhost" \
-            --ingress=all \
-            --vpc-egress=private-ranges-only
+            --ingress=all
 
       - name: Get Backend URL
         id: backend-url
