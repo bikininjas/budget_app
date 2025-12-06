@@ -238,6 +238,15 @@ export interface ProjectCreate {
   deadline?: string;
 }
 
+export interface ProjectUpdate {
+  name?: string;
+  description?: string;
+  target_amount?: number;
+  deadline?: string;
+  is_active?: boolean;
+  is_completed?: boolean;
+}
+
 export interface ProjectContribution {
   id: number;
   amount: number;

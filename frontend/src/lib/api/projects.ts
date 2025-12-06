@@ -2,6 +2,7 @@ import api from './client';
 import type {
   Project,
   ProjectCreate,
+  ProjectUpdate,
   ProjectContribution,
   ProjectContributionCreate,
 } from '@/types';
@@ -25,7 +26,7 @@ export const projectsApi = {
     return response.data;
   },
 
-  update: async (id: number, project: Partial<ProjectCreate>): Promise<Project> => {
+  update: async (id: number, project: ProjectUpdate): Promise<Project> => {
     const response = await api.patch<Project>(`/projects/${id}`, project);
     return response.data;
   },
