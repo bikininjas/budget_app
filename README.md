@@ -2,6 +2,28 @@
 
 Application de gestion de budget familial pour Marie et Seb.
 
+## 🚨 Erreur 500 en Production ?
+
+Si le backend retourne une erreur 500 après un déploiement:
+
+```bash
+# Lance le script de diagnostic
+./scripts/fix-production-500.sh
+```
+
+**Cause probable**: Migration de base de données non appliquée.
+
+**Solution rapide**:
+1. Récupère ta DATABASE_URL de Neon.tech
+2. Applique les migrations:
+```bash
+cd backend
+export DATABASE_URL='<ton-url-neon>'
+alembic upgrade head
+```
+
+Voir le script `./scripts/fix-production-500.sh` pour les instructions détaillées.
+
 ## 🚀 Fonctionnalités
 
 ### Gestion des dépenses
