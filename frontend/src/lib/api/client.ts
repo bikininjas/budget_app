@@ -13,14 +13,25 @@ const API_URLS = {
 
 // Determine API URL dynamically based on hostname ONLY
 function getApiBaseUrl(): string {
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  // Server-side (SSR): Always use production HTTPS
+  if (typeof window === 'undefined') {
+    // Check if we're in development (NODE_ENV)
+    if (process.env.NODE_ENV === 'development') {
+      return API_URLS.localhost;
+    }
+    // Production SSR: ALWAYS HTTPS
+    return API_URLS.production;
+  }
+  
+  // Client-side: Check hostname
+  const hostname = window.location.hostname;
   
   // Local development
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return API_URLS.localhost;
   }
   
-  // Production - TOUJOURS HTTPS
+  // Production client: ALWAYS HTTPS
   return API_URLS.production;
 }
 
