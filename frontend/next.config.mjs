@@ -13,7 +13,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https:; connect-src 'self' https://backend-budget.novacat.fr https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;",
+            value: "upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https:; connect-src 'self' https://backend-budget.novacat.fr https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://r2cdn.perplexity.ai;",
           },
           {
             key: 'Strict-Transport-Security',

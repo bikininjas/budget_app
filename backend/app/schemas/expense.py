@@ -26,7 +26,7 @@ class ExpenseCreate(ExpenseBase):
 
     category_id: int
     account_id: int
-    assigned_to: int
+    assigned_to: int | None = None  # None = dépense commune
     project_id: int | None = None
 
 
@@ -53,7 +53,7 @@ class ExpenseResponse(ExpenseBase):
     id: int
     category_id: int
     account_id: int
-    assigned_to: int
+    assigned_to: int | None  # None = dépense commune
     created_by: int
     project_id: int | None
     is_recurring: bool

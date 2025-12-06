@@ -163,12 +163,14 @@ export function ExpenseList() {
                       <td className="p-4">
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium ${
-                            expense.assigned_user_name?.toLowerCase() === 'seb'
+                            !expense.assigned_user_name
+                              ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300'
+                              : expense.assigned_user_name?.toLowerCase() === 'seb'
                               ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
                               : 'bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300'
                           }`}
                         >
-                          {expense.assigned_user_name || 'N/A'}
+                          {expense.assigned_user_name || 'Commun'}
                         </span>
                       </td>
                       <td className="p-4 text-sm text-slate-600 dark:text-slate-300">
@@ -237,12 +239,14 @@ export function ExpenseList() {
                     </span>
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        expense.assigned_user_name?.toLowerCase() === 'seb'
+                        !expense.assigned_user_name
+                          ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300'
+                          : expense.assigned_user_name?.toLowerCase() === 'seb'
                           ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
                           : 'bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300'
                       }`}
                     >
-                      {expense.assigned_user_name || 'N/A'}
+                      {expense.assigned_user_name || 'Commun'}
                     </span>
                     <span className="px-2 py-0.5 rounded text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                       {getExpenseSplitDescription(

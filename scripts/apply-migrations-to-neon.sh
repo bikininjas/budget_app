@@ -62,7 +62,18 @@ fi
 
 echo ""
 log_info "Checking current migration state..."
-cd backend
+
+# Get script directory and project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+BACKEND_DIR="$PROJECT_ROOT/backend"
+
+if [ ! -d "$BACKEND_DIR" ]; then
+    log_error "Backend directory not found: $BACKEND_DIR"
+    exit 1
+fi
+
+cd "$BACKEND_DIR"
 
 # Show current migration
 python -c "
@@ -85,8 +96,18 @@ echo ""
 log_info "Running: alembic upgrade head"
 echo ""
 
-# Run migration
-alembic upgrade head
+# Check which python is available
+if command -v python3 &> /dev/null; then
+    PYTHON_CMD="python3"
+elif command -v python &> /dev/null; then
+    PYTHON_CMD="python"
+else
+    log_error "Python not found. Please install Python 3.12+"
+    exit 1
+fi
+
+# Run migration using python -m alembic (works even if alembic not in PATH)
+$PYTHON_CMD -m alembic upgrade head
 
 if [ $? -eq 0 ]; then
     echo ""

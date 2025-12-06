@@ -23,7 +23,7 @@ const expenseSchema = z.object({
   date: z.string().min(1, 'Date requise'),
   category_id: z.coerce.number().min(1, 'Catégorie requise'),
   account_id: z.coerce.number().min(1, 'Compte requis'),
-  assigned_to: z.coerce.number().min(1, 'Assignation requise'),
+  assigned_to: z.coerce.number().nullable(),  // null = Commun, number = utilisateur spécifique
   split_type: z.nativeEnum(SplitType),
   frequency: z.nativeEnum(Frequency),
   project_id: z.coerce.number().optional().nullable(),
@@ -85,7 +85,7 @@ export function ExpenseFormModal({
       date: new Date().toISOString().split('T')[0],
       category_id: 0,
       account_id: 0,
-      assigned_to: 0,
+      assigned_to: null,  // Default to null (Commun)
       split_type: SplitType.EQUAL,
       frequency: Frequency.ONE_TIME,
       project_id: null,
@@ -104,7 +104,7 @@ export function ExpenseFormModal({
         date: expense.date.split('T')[0],
         category_id: expense.category_id,
         account_id: expense.account_id,
-        assigned_to: expense.assigned_to,
+        assigned_to: expense.assigned_to ?? null,  // Handle null for common expenses
         split_type: expense.split_type,
         frequency: expense.frequency,
         project_id: expense.project_id,
@@ -118,7 +118,7 @@ export function ExpenseFormModal({
         date: new Date().toISOString().split('T')[0],
         category_id: 0,
         account_id: 0,
-        assigned_to: 0,
+        assigned_to: null,  // Default to null (Commun)
         split_type: SplitType.EQUAL,
         frequency: Frequency.ONE_TIME,
         project_id: null,
@@ -131,6 +131,7 @@ export function ExpenseFormModal({
     mutationFn: (data: ExpenseFormData) =>
       expensesApi.create({
         ...data,
+        assigned_to: data.assigned_to || null,  // 0 ou empty string → null pour "Commun"
         project_id: data.project_id || undefined,
       }),
     onSuccess: () => {
@@ -143,6 +144,7 @@ export function ExpenseFormModal({
     mutationFn: (data: ExpenseFormData) =>
       expensesApi.update(expense!.id, {
         ...data,
+        assigned_to: data.assigned_to || null,  // 0 ou empty string → null pour "Commun"
         project_id: data.project_id || undefined,
       }),
     onSuccess: () => {
@@ -276,6 +278,7 @@ export function ExpenseFormModal({
               </label>
               <select {...register('assigned_to')} className="input">
                 <option value={0}>Sélectionner...</option>
+                <option value="">Commun</option>
                 {users?.map((user) => (
                   <option key={user.id} value={user.id}>
                     {user.full_name || user.username}

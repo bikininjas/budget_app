@@ -77,7 +77,8 @@ Use `lucide-react` NOT `@heroicons/react`. Common: `Plus`, `Pencil`, `Trash2`, `
 
 ## Development Workflows
 
-
+- Create scripts in `scripts/` for repetitive tasks such as test builds, linting, endpoints testing.
+- Always run full local tests before pushing code (frontend + backend).
 - Do not use "gh" cli as it blocks copilot from suggesting commands because it takes over the terminal. Use standard git commands instead or github api by curl.
 - Use /usr/bin/grep instead of grep alias that may include color codes breaking scripts.
 - Always use "bun" instead of "npm" or "yarn" for frontend commands.

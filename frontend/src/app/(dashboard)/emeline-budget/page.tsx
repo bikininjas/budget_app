@@ -97,9 +97,9 @@ export default function EmelineBudgetPage() {
     return <div>Loading...</div>;
   }
 
-  const remainingBudget = summary?.remaining_budget ?? 0;
+  const remainingBudget = summary?.remaining_budget ? Number(summary.remaining_budget) : 0;
   const budgetPercentage = summary?.monthly_budget
-    ? ((summary.total_spent / summary.monthly_budget) * 100)
+    ? ((Number(summary.total_spent) / Number(summary.monthly_budget)) * 100)
     : 0;
 
   return (
@@ -163,19 +163,19 @@ export default function EmelineBudgetPage() {
             <div>
               <p className="text-sm text-gray-500">Budget mensuel</p>
               <p className="text-2xl font-bold text-gray-900">
-                {summary.monthly_budget?.toFixed(2) ?? '0.00'} €
+                {summary.monthly_budget ? Number(summary.monthly_budget).toFixed(2) : '0.00'} €
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Dépensé</p>
               <p className="text-2xl font-bold text-orange-600">
-                {summary.total_spent.toFixed(2)} €
+                {Number(summary.total_spent).toFixed(2)} €
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Restant</p>
               <p className={`text-2xl font-bold ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {remainingBudget.toFixed(2)} €
+                {Number(remainingBudget).toFixed(2)} €
               </p>
             </div>
           </div>

@@ -83,9 +83,9 @@ export interface ChildExpenseUpdate {
 export interface ChildExpenseSummary {
   user_id: number;
   username: string;
-  monthly_budget: number | null;
-  total_spent: number;
-  remaining_budget: number | null;
+  monthly_budget: string | null;  // Decimal from backend
+  total_spent: string;  // Decimal from backend
+  remaining_budget: string | null;  // Decimal from backend
   expense_count: number;
   current_month: string;
 }
@@ -160,7 +160,7 @@ export interface Expense {
   split_type: SplitType;
   category_id: number;
   account_id: number;
-  assigned_to: number;
+  assigned_to: number | null;  // null = dépense commune
   created_by: number;
   project_id: number | null;
   is_recurring: boolean;
@@ -183,7 +183,7 @@ export interface ExpenseCreate {
   split_type?: SplitType;
   category_id: number;
   account_id: number;
-  assigned_to: number;
+  assigned_to?: number | null;  // null = dépense commune
   project_id?: number;
   is_recurring?: boolean;
 }
@@ -197,7 +197,7 @@ export interface ExpenseUpdate {
   split_type?: SplitType;
   category_id?: number;
   account_id?: number;
-  assigned_to?: number;
+  assigned_to?: number | null;  // null = dépense commune
   project_id?: number;
   is_active?: boolean;
   is_recurring?: boolean;
