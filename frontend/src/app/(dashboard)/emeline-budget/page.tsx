@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Plus, Pencil, Trash2, Link as LinkIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Link as LinkIcon, Settings } from 'lucide-react';
 import { childExpensesApi } from '@/lib/api/child-expenses';
+import { usersApi } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
+import { BudgetSettingsModal } from '@/components/budget/budget-settings-modal';
 import type { ChildExpense, ChildExpenseCreate } from '@/types';
 
 export default function EmelineBudgetPage() {
@@ -16,9 +18,20 @@ export default function EmelineBudgetPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<ChildExpense | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Only allow child users to see their own budget, parents can see all
   const userId = user?.role === 'child' ? user.id : undefined;
+  const isAdmin = user?.role === 'admin';
+
+  // Fetch all users to get Emeline's info (for admin budget management)
+  const { data: users } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => usersApi.getAll(),
+    enabled: isAdmin,
+  });
+
+  const emelineUser = users?.find((u) => u.username === 'emeline');
 
   // Fetch budget summary
   const { data: summary } = useQuery({
@@ -78,7 +91,7 @@ export default function EmelineBudgetPage() {
     const formData = new FormData(e.currentTarget);
     const data: Partial<ChildExpense> & { user_id?: number } = {
       description: formData.get('description') as string,
-      amount: parseFloat(formData.get('amount') as string),
+      amount: Number.parseFloat(formData.get('amount') as string),
       purchase_date: formData.get('purchase_date') as string,
       product_url: formData.get('product_url') as string || null,
       notes: formData.get('notes') as string || null,
@@ -106,20 +119,39 @@ export default function EmelineBudgetPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           Budget Emeline
         </h1>
-        <button
-          onClick={() => {
-            setEditingExpense(null);
-            setIsFormOpen(true);
-          }}
-          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
-        >
-          <Plus className="h-5 w-5" />
-          Nouvelle dépense
-        </button>
+        <div className="flex gap-2">
+          {isAdmin && emelineUser && (
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center gap-2 rounded-lg bg-slate-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-500"
+            >
+              <Settings className="h-5 w-5" />
+              Gérer le budget
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setEditingExpense(null);
+              setIsFormOpen(true);
+            }}
+            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+          >
+            <Plus className="h-5 w-5" />
+            Nouvelle dépense
+          </button>
+        </div>
       </div>
+
+      {/* Budget Settings Modal (Admin only) */}
+      {isAdmin && emelineUser && isSettingsOpen && (
+        <BudgetSettingsModal
+          user={emelineUser}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
 
       {/* Month/Year Selector */}
       <div className="flex gap-4">

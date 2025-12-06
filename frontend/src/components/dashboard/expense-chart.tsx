@@ -48,20 +48,28 @@ export function ExpenseChart() {
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 12 }} />
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            className="stroke-slate-200 dark:stroke-slate-700" 
+          />
+          <XAxis 
+            dataKey="name" 
+            className="fill-slate-600 dark:fill-slate-400"
+            tick={{ fontSize: 12 }} 
+          />
           <YAxis
-            tick={{ fill: '#64748b', fontSize: 12 }}
+            className="fill-slate-600 dark:fill-slate-400"
+            tick={{ fontSize: 12 }}
             tickFormatter={(value) => `${value / 1000}k€`}
           />
           <Tooltip
             formatter={(value: number) => formatCurrency(value)}
             contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #e2e8f0',
+              backgroundColor: 'var(--tooltip-bg, white)',
+              border: '1px solid var(--tooltip-border, #e2e8f0)',
               borderRadius: '8px',
             }}
-            labelStyle={{ color: '#1e293b' }}
+            labelStyle={{ color: 'var(--tooltip-text, #1e293b)' }}
           />
           <Bar dataKey="total" fill="#6366f1" radius={[4, 4, 0, 0]} />
         </BarChart>

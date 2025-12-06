@@ -47,7 +47,7 @@ export function RecurringBudget() {
         <div className="p-4 bg-gradient-to-r from-primary-500/10 to-primary-600/10 dark:from-primary-500/20 dark:to-primary-600/20 rounded-xl border border-primary-200 dark:border-primary-800">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-4 h-4 text-primary-500" />
-            <p className="text-xs text-slate-600 dark:text-slate-400">Par mois</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300">Par mois</p>
           </div>
           <p className="text-xl font-bold text-primary-600 dark:text-primary-400">
             {formatCurrency(data.total_monthly)}
@@ -56,7 +56,7 @@ export function RecurringBudget() {
         <div className="p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl border border-amber-200 dark:border-amber-800">
           <div className="flex items-center gap-2 mb-1">
             <RefreshCcw className="w-4 h-4 text-amber-500" />
-            <p className="text-xs text-slate-600 dark:text-slate-400">Par an</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300">Par an</p>
           </div>
           <p className="text-xl font-bold text-amber-600 dark:text-amber-400">
             {formatCurrency(annualTotal)}
@@ -67,7 +67,7 @@ export function RecurringBudget() {
       {/* Répartition par catégorie */}
       {data.by_category && data.by_category.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
             Par catégorie
           </p>
           <div className="flex flex-wrap gap-2">
@@ -88,7 +88,7 @@ export function RecurringBudget() {
 
       {/* Détail des dépenses */}
       <div className="space-y-2">
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
           {data.items.length} dépense{data.items.length > 1 ? 's' : ''} récurrente{data.items.length > 1 ? 's' : ''}
         </p>
         {displayedItems.map((item) => (

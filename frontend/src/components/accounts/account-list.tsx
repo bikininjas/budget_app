@@ -1,15 +1,45 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { CreditCard, Wallet } from 'lucide-react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { CreditCard, Wallet, Plus, Pencil, Trash2 } from 'lucide-react';
 import { accountsApi } from '@/lib/api';
 import { formatCurrency, ACCOUNT_TYPE_LABELS } from '@/lib/utils';
+import { AccountFormModal } from './account-form-modal';
+import type { Account } from '@/types';
 
 export function AccountList() {
+  const queryClient = useQueryClient();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+
   const { data: accounts = [], isLoading } = useQuery({
     queryKey: ['accounts'],
     queryFn: () => accountsApi.getAll(),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: accountsApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+
+  const handleEdit = (account: Account) => {
+    setEditingAccount(account);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce compte ?')) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsFormOpen(false);
+    setEditingAccount(null);
+  };
 
   if (isLoading) {
     return (
@@ -21,20 +51,52 @@ export function AccountList() {
 
   if (accounts.length === 0) {
     return (
-      <div className="p-12 text-center">
-        <Wallet className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-        <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">
-          Aucun compte
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400">
-          Vous n&apos;avez pas encore de compte bancaire configuré.
-        </p>
-      </div>
+      <>
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => {
+              setEditingAccount(null);
+              setIsFormOpen(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Nouveau compte
+          </button>
+        </div>
+        <div className="p-12 text-center">
+          <Wallet className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
+          <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Aucun compte
+          </h3>
+          <p className="text-slate-500 dark:text-slate-400">
+            Vous n&apos;avez pas encore de compte bancaire configuré.
+          </p>
+        </div>
+
+        {isFormOpen && (
+          <AccountFormModal account={editingAccount} onClose={handleCloseModal} />
+        )}
+      </>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <>
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => {
+            setEditingAccount(null);
+            setIsFormOpen(true);
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          <Plus className="w-5 h-5" />
+          Nouveau compte
+        </button>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {accounts.map((account) => {
         const isJoint = account.account_type.includes('joint');
         const isSeb = account.account_type.includes('seb');
@@ -89,15 +151,31 @@ export function AccountList() {
               >
                 {account.is_active ? 'Actif' : 'Inactif'}
               </span>
-              {account.description && (
-                <span className="text-xs text-white/60 truncate ml-2">
-                  {account.description}
-                </span>
-              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(account)}
+                  className="p-1.5 hover:bg-white/20 rounded transition-colors"
+                  title="Modifier"
+                >
+                  <Pencil className="w-4 h-4 text-white" />
+                </button>
+                <button
+                  onClick={() => handleDelete(account.id)}
+                  className="p-1.5 hover:bg-white/20 rounded transition-colors"
+                  title="Supprimer"
+                >
+                  <Trash2 className="w-4 h-4 text-white" />
+                </button>
+              </div>
             </div>
           </div>
         );
       })}
-    </div>
+      </div>
+
+      {isFormOpen && (
+        <AccountFormModal account={editingAccount} onClose={handleCloseModal} />
+      )}
+    </>
   );
 }

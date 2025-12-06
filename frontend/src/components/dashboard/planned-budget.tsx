@@ -50,7 +50,7 @@ export function PlannedBudget() {
             <div className="p-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
               <div className="flex items-center gap-2 mb-1">
                 <Calculator className="w-4 h-4 text-emerald-500" />
-                <p className="text-xs text-slate-600 dark:text-slate-400">Par mois</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300">Par mois</p>
               </div>
               <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                 {formatCurrency(data.total_monthly)}
@@ -59,7 +59,7 @@ export function PlannedBudget() {
             <div className="p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 rounded-xl border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-4 h-4 text-blue-500" />
-                <p className="text-xs text-slate-600 dark:text-slate-400">Par an</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300">Par an</p>
               </div>
               <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {formatCurrency(data.total_annual)}
