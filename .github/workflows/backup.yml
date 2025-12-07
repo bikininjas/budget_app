@@ -118,22 +118,13 @@ jobs:
           RETENTION="${RETENTION:-30}"
           
           if ! gsutil ls "gs://${{ env.BACKUP_BUCKET }}" 2>/dev/null; then
-            gsutil mb -l ${{ env.REGION }} "gs://${{ env.BACKUP_BUCKET }}"
-            # Set lifecycle policy to delete old backups
-            cat > /tmp/lifecycle.json << EOF
-          {
-            "lifecycle": {
-              "rule": [
-                {
-                  "action": {"type": "Delete"},
-                  "condition": {"age": ${RETENTION}}
-                }
-              ]
-            }
-          }
-          EOF
-            gsutil lifecycle set /tmp/lifecycle.json "gs://${{ env.BACKUP_BUCKET }}"
-            echo "✅ Bucket created with ${RETENTION}-day retention policy"
+            echo "❌ Bucket gs://${{ env.BACKUP_BUCKET }} does not exist. Please create it manually with proper permissions."
+            echo "Required permissions for the service account:"
+            echo "- Storage Object Admin or Storage Admin role"
+            echo "- Or specific permissions: storage.objects.create, storage.objects.delete, storage.objects.get, storage.objects.list"
+            exit 1
+          else
+            echo "✅ Bucket gs://${{ env.BACKUP_BUCKET }} exists"
           fi
 
       - name: Upload to Google Cloud Storage
