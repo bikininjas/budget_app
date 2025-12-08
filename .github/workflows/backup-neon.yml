@@ -53,14 +53,11 @@ jobs:
           # Convertir postgresql+asyncpg:// en postgresql://
           PGDUMP_URL="${PGDUMP_URL//postgresql+asyncpg:\/\//postgresql:\/\/}"
           
-          # Debug: voir l'URL avant transformation SSL
-          echo "Before SSL fix: $(echo $PGDUMP_URL | sed 's/:[^:]*@/:***@/')"
+          # Remplacer ?ssl= par ?sslmode= (et &ssl= par &sslmode=)
+          PGDUMP_URL="${PGDUMP_URL//\?ssl=/\?sslmode=}"
+          PGDUMP_URL="${PGDUMP_URL//\&ssl=/\&sslmode=}"
           
-          # Remplacer UNIQUEMENT ?ssl (pas ?sslmode)
-          # En utilisant perl pour un remplacement plus précis
-          PGDUMP_URL=$(echo "$PGDUMP_URL" | perl -pe 's/\?ssl(?!mode)/\?sslmode=require/g; s/&ssl(?!mode)/\&sslmode=require/g')
-          
-          echo "After SSL fix: $(echo $PGDUMP_URL | sed 's/:[^:]*@/:***@/')"
+          echo "URL converted successfully"
           
           # Utiliser pg_dump avec compression directe
           pg_dump "${PGDUMP_URL}" | gzip > "${BACKUP_FILE}"
