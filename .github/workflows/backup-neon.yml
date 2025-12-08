@@ -48,8 +48,15 @@ jobs:
           
           echo "Creating backup: $BACKUP_FILE"
           
+          # Convertir l'URL SQLAlchemy (postgresql+asyncpg) en URL PostgreSQL standard
+          PGDUMP_URL="${DATABASE_URL}"
+          PGDUMP_URL="${PGDUMP_URL//postgresql+asyncpg:\/\//postgresql:\/\/}"
+          
+          # Debug: afficher le protocole (masqué par GitHub)
+          echo "URL protocol: $(echo $PGDUMP_URL | cut -d':' -f1)"
+          
           # Utiliser pg_dump avec compression directe
-          pg_dump "${DATABASE_URL}" | gzip > "${BACKUP_FILE}"
+          pg_dump "${PGDUMP_URL}" | gzip > "${BACKUP_FILE}"
           
           # Vérifier que le backup a été créé
           if [ ! -f "${BACKUP_FILE}" ]; then
