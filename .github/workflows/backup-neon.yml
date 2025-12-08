@@ -53,10 +53,19 @@ jobs:
           BACKUP_FILE="neon_backup_${TIMESTAMP}.sql"
           
           echo "Creating backup: $BACKUP_FILE"
-          pg_dump "$DATABASE_URL" > "$BACKUP_FILE"
+          
+          # Utiliser pg_dump avec l'URL complète entre guillemets
+          # et rediriger la sortie vers le fichier
+          pg_dump "${DATABASE_URL}" -f "${BACKUP_FILE}"
+          
+          # Vérifier que le backup a été créé
+          if [ ! -f "${BACKUP_FILE}" ]; then
+            echo "❌ Backup file not created"
+            exit 1
+          fi
           
           # Compresser le backup
-          gzip "$BACKUP_FILE"
+          gzip "${BACKUP_FILE}"
           
           echo "BACKUP_FILE=${BACKUP_FILE}.gz" >> $GITHUB_ENV
 
