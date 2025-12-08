@@ -52,7 +52,13 @@ jobs:
           PGDUMP_URL="${DATABASE_URL}"
           PGDUMP_URL="${PGDUMP_URL//postgresql+asyncpg:\/\//postgresql:\/\/}"
           
-          # Debug: afficher le protocole (masqué par GitHub)
+          # Remplacer les paramètres SSL invalides
+          # ?ssl -> ?sslmode=require
+          PGDUMP_URL="${PGDUMP_URL//\?ssl&/\?sslmode=require&}"
+          PGDUMP_URL="${PGDUMP_URL//\?ssl$/\?sslmode=require}"
+          PGDUMP_URL="${PGDUMP_URL//&ssl&/&sslmode=require&}"
+          PGDUMP_URL="${PGDUMP_URL//&ssl$/&sslmode=require}"
+          
           echo "URL protocol: $(echo $PGDUMP_URL | cut -d':' -f1)"
           
           # Utiliser pg_dump avec compression directe
