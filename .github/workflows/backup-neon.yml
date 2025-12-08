@@ -54,9 +54,22 @@ jobs:
           
           echo "Creating backup: $BACKUP_FILE"
           
-          # Utiliser pg_dump avec l'URL complète entre guillemets
-          # et rediriger la sortie vers le fichier
-          pg_dump "${DATABASE_URL}" -f "${BACKUP_FILE}"
+          # Convertir postgresql+asyncpg:// en postgresql:// si nécessaire
+          # et s'assurer que les paramètres SSL sont bien formatés
+          PGDUMP_URL="${DATABASE_URL}"
+          PGDUMP_URL="${PGDUMP_URL//postgresql+asyncpg:\/\//postgresql:\/\/}"
+          
+          # Utiliser pg_dump avec l'URL et le format correct
+          # Ajouter sslmode=require si pas déjà présent
+          if [[ ! "$PGDUMP_URL" =~ sslmode ]]; then
+            if [[ "$PGDUMP_URL" =~ \? ]]; then
+              PGDUMP_URL="${PGDUMP_URL}&sslmode=require"
+            else
+              PGDUMP_URL="${PGDUMP_URL}?sslmode=require"
+            fi
+          fi
+          
+          pg_dump "${PGDUMP_URL}" -f "${BACKUP_FILE}"
           
           # Vérifier que le backup a été créé
           if [ ! -f "${BACKUP_FILE}" ]; then
