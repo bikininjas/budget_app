@@ -48,11 +48,63 @@ jobs:
               - 'frontend/**'
               - 'cloud/frontend.dockerfile'
 
+  # Lint & Format
+  lint-backend:
+    name: Lint Backend
+    runs-on: ubuntu-latest
+    needs: changes
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_backend == 'true') ||
+      (github.event_name == 'push' && needs.changes.outputs.backend == 'true')
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install Ruff
+        run: pip install ruff
+      
+      - name: Run Ruff Format
+        working-directory: ./backend
+        run: ruff format --check .
+      
+      - name: Run Ruff Lint
+        working-directory: ./backend
+        run: ruff check .
+
+  lint-frontend:
+    name: Lint Frontend
+    runs-on: ubuntu-latest
+    needs: changes
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_frontend == 'true') ||
+      (github.event_name == 'push' && needs.changes.outputs.frontend == 'true')
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: bun install --frozen-lockfile
+      
+      - name: Run Lint
+        working-directory: ./frontend
+        run: bun lint
+
   # Deploy Backend
   deploy-backend:
     name: Deploy Backend
     runs-on: ubuntu-latest
-    needs: changes
+    needs: [changes, lint-backend]
     if: |
       (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_backend == 'true') ||
       (github.event_name == 'push' && needs.changes.outputs.backend == 'true')
@@ -129,7 +181,7 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend
     runs-on: ubuntu-latest
-    needs: [changes, deploy-backend]
+    needs: [changes, deploy-backend, lint-frontend]
     if: |
       always() && 
       (
