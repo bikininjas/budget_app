@@ -1,0 +1,89 @@
+name: Daily Neon Database Backup
+
+on:
+  schedule:
+    # Tous les jours à 2h du matin (UTC)
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Permet de lancer manuellement
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+  BACKUP_BUCKET: ${{ vars.BACKUP_BUCKET || 'budget-app-backups' }}
+  DATABASE_URL_SECRET: ${{ vars.DATABASE_URL_SECRET }}
+
+jobs:
+  backup:
+    name: Backup Neon Database
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCS_GH_SVC_ACCOUNT_JSON_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install PostgreSQL Client 17
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Get Database URL from Secret Manager
+        id: get-db-url
+        run: |
+          DB_URL=$(gcloud secrets versions access latest --secret="${{ env.DATABASE_URL_SECRET }}")
+          echo "::add-mask::$DB_URL"
+          echo "DATABASE_URL=$DB_URL" >> $GITHUB_ENV
+
+      - name: Create Backup
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="neon_backup_${TIMESTAMP}.sql"
+          
+          echo "Creating backup: $BACKUP_FILE"
+          pg_dump "$DATABASE_URL" > "$BACKUP_FILE"
+          
+          # Compresser le backup
+          gzip "$BACKUP_FILE"
+          
+          echo "BACKUP_FILE=${BACKUP_FILE}.gz" >> $GITHUB_ENV
+
+      - name: Upload to Google Cloud Storage
+        run: |
+          BUCKET_PATH="gs://${{ env.BACKUP_BUCKET }}/neon/$(date +%Y/%m)/"
+          
+          echo "Uploading to: $BUCKET_PATH"
+          gsutil cp "$BACKUP_FILE" "$BUCKET_PATH"
+          
+          echo "✅ Backup uploaded successfully"
+
+      - name: Cleanup Old Backups (Keep 30 days)
+        run: |
+          CUTOFF_DATE=$(date -d '30 days ago' +%Y%m%d)
+          echo "Removing backups older than $CUTOFF_DATE"
+          
+          gsutil ls -r "gs://${{ env.BACKUP_BUCKET }}/neon/**/*.sql.gz" | while read file; do
+            FILE_DATE=$(echo "$file" | grep -oP '\d{8}' | head -1)
+            if [ ! -z "$FILE_DATE" ] && [ "$FILE_DATE" -lt "$CUTOFF_DATE" ]; then
+              echo "Deleting old backup: $file"
+              gsutil rm "$file" || true
+            fi
+          done
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Backup failed at $(date)"
+          echo "Check GitHub Actions logs for details"
