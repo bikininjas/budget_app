@@ -52,11 +52,8 @@ jobs:
           PGDUMP_URL="${DATABASE_URL}"
           PGDUMP_URL="${PGDUMP_URL//postgresql+asyncpg:\/\//postgresql:\/\/}"
           
-          # Remplacer les paramètres SSL invalides avec sed
-          # Gérer tous les cas: ?ssl, &ssl=..., ?sslmode=..., etc.
-          PGDUMP_URL=$(echo "$PGDUMP_URL" | sed -E 's/[?&]ssl([^m]|$)/?sslmode=require\1/g')
-          
-          echo "URL protocol: $(echo $PGDUMP_URL | cut -d':' -f1)"
+          # Debug: voir si l'URL contient déjà sslmode
+          echo "URL contains sslmode: $(echo $PGDUMP_URL | grep -o 'sslmode' || echo 'no')"
           
           # Utiliser pg_dump avec compression directe
           pg_dump "${PGDUMP_URL}" | gzip > "${BACKUP_FILE}"
