@@ -55,12 +55,15 @@ jobs:
           echo "Creating backup: $BACKUP_FILE"
           
           # Convertir postgresql+asyncpg:// en postgresql:// si nécessaire
-          # et s'assurer que les paramètres SSL sont bien formatés
           PGDUMP_URL="${DATABASE_URL}"
           PGDUMP_URL="${PGDUMP_URL//postgresql+asyncpg:\/\//postgresql:\/\/}"
           
-          # Utiliser pg_dump avec l'URL et le format correct
-          # Ajouter sslmode=require si pas déjà présent
+          # Nettoyer les paramètres SSL invalides (?ssl sans valeur)
+          # et remplacer par le format correct pour pg_dump
+          PGDUMP_URL="${PGDUMP_URL//\?ssl/\?sslmode=require}"
+          PGDUMP_URL="${PGDUMP_URL//\&ssl/\&sslmode=require}"
+          
+          # Ajouter sslmode=require si aucun paramètre SSL n'est présent
           if [[ ! "$PGDUMP_URL" =~ sslmode ]]; then
             if [[ "$PGDUMP_URL" =~ \? ]]; then
               PGDUMP_URL="${PGDUMP_URL}&sslmode=require"
@@ -69,6 +72,7 @@ jobs:
             fi
           fi
           
+          echo "Running pg_dump..."
           pg_dump "${PGDUMP_URL}" -f "${BACKUP_FILE}"
           
           # Vérifier que le backup a été créé
@@ -77,8 +81,11 @@ jobs:
             exit 1
           fi
           
+          echo "✅ Backup created successfully ($(du -h ${BACKUP_FILE} | cut -f1))"
+          
           # Compresser le backup
           gzip "${BACKUP_FILE}"
+          echo "✅ Backup compressed ($(du -h ${BACKUP_FILE}.gz | cut -f1))"
           
           echo "BACKUP_FILE=${BACKUP_FILE}.gz" >> $GITHUB_ENV
 
