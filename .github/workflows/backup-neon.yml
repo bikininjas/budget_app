@@ -50,13 +50,17 @@ jobs:
           
           # Convertir l'URL SQLAlchemy en URL PostgreSQL standard et fixer les paramètres SSL
           PGDUMP_URL="${DATABASE_URL}"
+          # Convertir postgresql+asyncpg:// en postgresql://
           PGDUMP_URL="${PGDUMP_URL//postgresql+asyncpg:\/\//postgresql:\/\/}"
-          PGDUMP_URL="${PGDUMP_URL//\?ssl&/\?sslmode=require&}"
-          PGDUMP_URL="${PGDUMP_URL//\?ssl/\?sslmode=require}"
-          PGDUMP_URL="${PGDUMP_URL//&ssl&/&sslmode=require&}"
-          PGDUMP_URL="${PGDUMP_URL//&ssl/&sslmode=require}"
           
-          echo "URL converted successfully"
+          # Debug: voir l'URL avant transformation SSL
+          echo "Before SSL fix: $(echo $PGDUMP_URL | sed 's/:[^:]*@/:***@/')"
+          
+          # Remplacer UNIQUEMENT ?ssl (pas ?sslmode)
+          # En utilisant perl pour un remplacement plus précis
+          PGDUMP_URL=$(echo "$PGDUMP_URL" | perl -pe 's/\?ssl(?!mode)/\?sslmode=require/g; s/&ssl(?!mode)/\&sslmode=require/g')
+          
+          echo "After SSL fix: $(echo $PGDUMP_URL | sed 's/:[^:]*@/:***@/')"
           
           # Utiliser pg_dump avec compression directe
           pg_dump "${PGDUMP_URL}" | gzip > "${BACKUP_FILE}"
