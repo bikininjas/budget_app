@@ -48,12 +48,15 @@ jobs:
           
           echo "Creating backup: $BACKUP_FILE"
           
-          # Convertir l'URL SQLAlchemy (postgresql+asyncpg) en URL PostgreSQL standard
+          # Convertir l'URL SQLAlchemy en URL PostgreSQL standard et fixer les paramètres SSL
           PGDUMP_URL="${DATABASE_URL}"
           PGDUMP_URL="${PGDUMP_URL//postgresql+asyncpg:\/\//postgresql:\/\/}"
+          PGDUMP_URL="${PGDUMP_URL//\?ssl&/\?sslmode=require&}"
+          PGDUMP_URL="${PGDUMP_URL//\?ssl/\?sslmode=require}"
+          PGDUMP_URL="${PGDUMP_URL//&ssl&/&sslmode=require&}"
+          PGDUMP_URL="${PGDUMP_URL//&ssl/&sslmode=require}"
           
-          # Debug: voir si l'URL contient déjà sslmode
-          echo "URL contains sslmode: $(echo $PGDUMP_URL | grep -o 'sslmode' || echo 'no')"
+          echo "URL converted successfully"
           
           # Utiliser pg_dump avec compression directe
           pg_dump "${PGDUMP_URL}" | gzip > "${BACKUP_FILE}"
