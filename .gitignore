@@ -89,3 +89,19 @@ Thumbs.db
 
 # Project notes (local documentation)
 PROJECT_NOTES.md
+
+# Local test scripts
+test_local_features.py
+test_simple_features.py
+
+# Playwright test files
+tests/
+playwright-report/
+test-results/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

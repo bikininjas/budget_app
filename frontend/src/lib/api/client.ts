@@ -7,7 +7,7 @@ function getApiBaseUrl(): string {
   
   const hostname = globalThis.location.hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:8001';
+    return 'http://localhost:8000';
   }
   
   return 'https://backend-budget.novacat.fr';

@@ -6,6 +6,7 @@ const nextConfig = {
   // This avoids baking HTTP URLs at build time
   
   // FORCE HTTPS EVERYWHERE - Ultra strict CSP
+  // Modified for local development to allow localhost connections
   async headers() {
     return [
       {
@@ -13,7 +14,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https:; connect-src 'self' https://backend-budget.novacat.fr https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://r2cdn.perplexity.ai;",
+            value: "upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https:; connect-src 'self' http://localhost:8000 http://localhost:8001 https://backend-budget.novacat.fr https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://r2cdn.perplexity.ai;",
           },
           {
             key: 'Strict-Transport-Security',
