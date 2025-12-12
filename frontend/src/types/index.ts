@@ -90,6 +90,28 @@ export interface ChildExpenseSummary {
   current_month: string;
 }
 
+// Child Monthly Budget types
+export interface ChildMonthlyBudget {
+  id: number;
+  user_id: number;
+  year: number;
+  month: number;
+  budget_amount: string | number;  // Decimal from backend returns as string
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChildMonthlyBudgetCreate {
+  user_id: number;
+  year: number;
+  month: number;
+  budget_amount: number;
+}
+
+export interface ChildMonthlyBudgetUpdate {
+  budget_amount: number;
+}
+
 // Account types
 export type AccountType =
   | 'caisse_epargne_joint'

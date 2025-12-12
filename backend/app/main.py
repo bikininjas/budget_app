@@ -13,6 +13,7 @@ from app.api.routes import (
     auth,
     categories,
     child_expenses,
+    child_monthly_budgets,
     expenses,
     projects,
     recurring_charges,
@@ -204,6 +205,7 @@ def create_application() -> FastAPI:
     app.include_router(accounts.router, prefix="/api")
     app.include_router(expenses.router, prefix="/api")
     app.include_router(child_expenses.router, prefix="/api")
+    app.include_router(child_monthly_budgets.router, prefix="/api")
     app.include_router(projects.router, prefix="/api")
     app.include_router(recurring_charges.router, prefix="/api")
 

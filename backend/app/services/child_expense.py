@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.models.child_expense import ChildExpense
+from app.models.child_monthly_budget import ChildMonthlyBudget
 from app.models.user import User
 from app.schemas.child_expense import (
     ChildExpenseCreate,
@@ -97,7 +98,7 @@ class ChildExpenseService:
         self, user_id: int, month: int | None = None, year: int | None = None
     ) -> ChildExpenseSummary:
         """Get expense summary for a child user including budget tracking."""
-        # Get user with monthly budget
+        # Get user
         user_result = await self.db.execute(select(User).where(User.id == user_id))
         user = user_result.scalar_one_or_none()
 
@@ -127,15 +128,29 @@ class ChildExpenseService:
         count_result = await self.db.execute(count_query)
         expense_count = count_result.scalar_one()
 
+        # Get monthly budget for the specified month/year (if it exists)
+        budget_result = await self.db.execute(
+            select(ChildMonthlyBudget.budget_amount).where(
+                ChildMonthlyBudget.user_id == user_id,
+                ChildMonthlyBudget.year == year,
+                ChildMonthlyBudget.month == month,
+            )
+        )
+        monthly_budget = budget_result.scalar_one_or_none()
+
+        # If no specific monthly budget, fall back to user.monthly_budget (for backward compatibility)
+        if monthly_budget is None:
+            monthly_budget = user.monthly_budget
+
         # Calculate remaining budget
         remaining_budget = None
-        if user.monthly_budget:
-            remaining_budget = user.monthly_budget - total_spent
+        if monthly_budget:
+            remaining_budget = monthly_budget - total_spent
 
         return ChildExpenseSummary(
             user_id=user.id,
             username=user.username,
-            monthly_budget=user.monthly_budget,
+            monthly_budget=monthly_budget,
             total_spent=total_spent,
             remaining_budget=remaining_budget,
             expense_count=expense_count,

@@ -9,6 +9,7 @@ import { childExpensesApi } from '@/lib/api/child-expenses';
 import { usersApi } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { BudgetSettingsModal } from '@/components/budget/budget-settings-modal';
+import { MonthlyBudgetSettingsModal } from '@/components/budget/monthly-budget-settings-modal';
 import type { ChildExpense, ChildExpenseCreate } from '@/types';
 
 export default function EmelineBudgetPage() {
