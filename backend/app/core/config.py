@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
     api_key: str = ""  # Optional API key for frontend authentication
 
-    # CORS - Support wildcard "*" for all origins
-    cors_origins: str = "http://localhost:3000,http://frontend:3000"
+    # CORS - Support wildcard "*" for all origins, or specific production domains
+    cors_origins: str = "https://budget.novacat.fr,https://backend-budget.novacat.fr,http://localhost:3000,http://frontend:3000"
 
     # IP Filtering (comma-separated list)
     allowed_ips: str = ""  # e.g., "82.65.136.32,10.0.0.1"

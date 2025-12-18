@@ -109,7 +109,11 @@ def create_application() -> FastAPI:
         )
 
         # Check if request is HTTP (Cloud Run sets X-Forwarded-Proto)
-        if forwarded_proto == "http" and not _is_public_endpoint(request.url.path):
+        # Only redirect if we're sure it's HTTP and not behind a proxy
+        if (forwarded_proto == "http" and 
+            not _is_public_endpoint(request.url.path) and
+            "cloudfunctions.net" not in host and
+            "cloudrun.app" not in host):
             logger.warning(
                 f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}"
             )
