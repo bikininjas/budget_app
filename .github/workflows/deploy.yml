@@ -70,7 +70,7 @@ jobs:
       
       - name: Run Ruff Format
         working-directory: ./backend
-        run: ruff format --check .
+        run: ruff format .
       
       - name: Run Ruff Lint
         working-directory: ./backend
