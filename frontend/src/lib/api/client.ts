@@ -74,11 +74,8 @@ api.interceptors.request.use(
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      
-      // Add Origin header for CORS
-      if (config.headers) {
-        config.headers.Origin = globalThis.window.location.origin;
-      }
+      // Note: We cannot set the Origin header manually as it's a forbidden header
+      // The browser will automatically set it based on the current page origin
     }
     return config;
   },

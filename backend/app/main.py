@@ -88,10 +88,40 @@ def create_application() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"] if allow_all_origins else cors_origins,
-        allow_credentials=not allow_all_origins,  # Can't use credentials with wildcard
+        allow_credentials=True,  # Always allow credentials for authenticated requests
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # OPTIONS request handler for CORS preflight
+    @app.middleware("http")
+    async def handle_options_request(request: Request, call_next):
+        """Handle OPTIONS requests for CORS preflight."""
+        if request.method == "OPTIONS":
+            # Add CORS headers for preflight requests
+            response = JSONResponse(status_code=200, content={"message": "OK"})
+            
+            # Add CORS headers
+            if allow_all_origins:
+                response.headers["Access-Control-Allow-Origin"] = "*"
+            else:
+                origin = request.headers.get("Origin", "")
+                if origin in cors_origins:
+                    response.headers["Access-Control-Allow-Origin"] = origin
+                    response.headers["Vary"] = "Origin"
+            
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Max-Age"] = "86400"
+            
+            # Always allow credentials for authenticated requests
+            # Note: When using specific origins (not wildcard), credentials are allowed
+            if not allow_all_origins:
+                response.headers["Access-Control-Allow-Credentials"] = "true"
+            
+            return response
+        
+        return await call_next(request)
 
     # HTTPS redirect middleware (force HTTPS in production)
     @app.middleware("http")
@@ -109,24 +139,28 @@ def create_application() -> FastAPI:
             f"IP={forwarded_for} | Referer={referer}"
         )
 
-        # Check if request is HTTP (Cloud Run sets X-Forwarded-Proto)
-        # Only redirect if we're sure it's HTTP and not behind a proxy
-        if (
-            forwarded_proto == "http"
-            and not _is_public_endpoint(request.url.path)
-            and "cloudfunctions.net" not in host
-            and "cloudrun.app" not in host
-        ):
-            logger.warning(
-                f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}"
-            )
-            # Redirect HTTP to HTTPS
+        # Simple HTTP to HTTPS redirect for non-Cloud-Run environments
+        if forwarded_proto == "http" and "cloudrun.app" not in host:
+            logger.warning(f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}")
             http_scheme = "http://"
             https_scheme = "https://"
             url = str(request.url).replace(http_scheme, https_scheme, 1)
+            
+            # Add CORS headers to the redirect response
+            cors_origins = settings.cors_origins_list
+            allow_all_origins = "*" in cors_origins
+            headers = {"Location": url}
+            if allow_all_origins:
+                headers["Access-Control-Allow-Origin"] = "*"
+            else:
+                origin = request.headers.get("Origin", "")
+                if origin in cors_origins:
+                    headers["Access-Control-Allow-Origin"] = origin
+                    headers["Vary"] = "Origin"
+            
             return JSONResponse(
                 status_code=status.HTTP_308_PERMANENT_REDIRECT,
-                headers={"Location": url},
+                headers=headers,
                 content={"detail": "HTTPS required", "redirect": url},
             )
 
@@ -141,38 +175,8 @@ def create_application() -> FastAPI:
                 logger.warning(f"🔧 Fixing HTTP redirect to HTTPS: {location}")
                 response.headers["Location"] = location.replace(http_scheme, https_scheme, 1)
 
-        response = await call_next(request)
-
-        # ✅ CRITICAL FIX: Force HTTPS in Location headers from redirects
-        http_scheme = "http://"
-        https_scheme = "https://"
-        if "Location" in response.headers:
-            location = response.headers["Location"]
-            if location.startswith(http_scheme):
-                logger.warning(f"🔧 Fixing HTTP redirect to HTTPS: {location}")
-                response.headers["Location"] = location.replace(http_scheme, https_scheme, 1)
-
-        # ✅ CRITICAL FIX: Add CORS headers to ALL responses including redirects
-        # This prevents CORS issues with redirect responses
-        if "Access-Control-Allow-Origin" not in response.headers:
-            cors_origins = settings.cors_origins_list
-            allow_all_origins = "*" in cors_origins
-            if allow_all_origins:
-                response.headers["Access-Control-Allow-Origin"] = "*"
-            else:
-                # For specific origins, we need to handle this more carefully
-                origin = request.headers.get("Origin", "")
-                if origin in cors_origins:
-                    response.headers["Access-Control-Allow-Origin"] = origin
-                    response.headers["Vary"] = "Origin"
-
-        # Add CORS headers for allowed methods and headers
-        if "Access-Control-Allow-Methods" not in response.headers:
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        if "Access-Control-Allow-Headers" not in response.headers:
-            response.headers["Access-Control-Allow-Headers"] = "*"
-        if "Access-Control-Allow-Credentials" not in response.headers:
-            response.headers["Access-Control-Allow-Credentials"] = "true"
+        # Note: CORS headers are now handled by the dedicated CORS middleware
+        # We only need to ensure HTTPS Location headers are corrected here
 
         # Add strict security headers to ALL responses
         response.headers["Strict-Transport-Security"] = (

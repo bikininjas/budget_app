@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.deps import CurrentUser, DbSession
+from app.schemas.user import UserLogin
 from app.core.config import settings
 from app.core.security import (
     create_access_token,
@@ -34,12 +35,12 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login", response_model=Token)
 async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    login_data: UserLogin,
     db: DbSession,
 ) -> Token:
     """Authenticate user and return JWT token."""
     user_service = UserService(db)
-    user = await user_service.authenticate(form_data.username, form_data.password)
+    user = await user_service.authenticate(login_data.username, login_data.password)
 
     if not user:
         raise HTTPException(
