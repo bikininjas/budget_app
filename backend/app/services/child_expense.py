@@ -167,7 +167,7 @@ class ChildExpenseService:
         is_exceptional = False
 
         if monthly_budget_record:
-            monthly_budget = monthly_budget_record.budget_amount
+            monthly_budget = monthly_budget_record.base_amount
             carryover_amount = monthly_budget_record.carryover_amount
             is_exceptional = monthly_budget_record.is_exceptional
         elif user.monthly_budget:
