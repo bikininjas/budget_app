@@ -87,12 +87,8 @@ Thumbs.db
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 
-# Project notes (local documentation)
-PROJECT_NOTES.md
-
-# Local test scripts
-test_local_features.py
-test_simple_features.py
+# Technical documentation (keep for reference)
+TECHNICAL_ISSUES_SUMMARY.md
 
 # Playwright test files
 tests/
