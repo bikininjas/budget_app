@@ -3,13 +3,9 @@ import type { Token, User, UserLogin, UserCreate, ChangePassword, MagicLinkReque
 
 export const authApi = {
   login: async (credentials: UserLogin): Promise<Token> => {
-    const formData = new URLSearchParams();
-    formData.append('username', credentials.username);
-    formData.append('password', credentials.password);
-    
-    const response = await api.post<Token>('/auth/login', formData, {
+    const response = await api.post<Token>('/auth/login', credentials, {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
       },
     });
     return response.data;
