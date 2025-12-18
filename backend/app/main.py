@@ -78,7 +78,8 @@ def create_application() -> FastAPI:
         redoc_url=REDOC_URL,
         openapi_url=OPENAPI_URL,
         lifespan=lifespan,
-        # redirect_slashes=True by default - middleware rewrites Location headers to HTTPS
+        # Disable automatic slash redirect to prevent CORS issues
+        redirect_slashes=False,
     )
 
     # Configure CORS - Support wildcard for network access
@@ -139,6 +140,39 @@ def create_application() -> FastAPI:
             if location.startswith(http_scheme):
                 logger.warning(f"🔧 Fixing HTTP redirect to HTTPS: {location}")
                 response.headers["Location"] = location.replace(http_scheme, https_scheme, 1)
+
+        response = await call_next(request)
+
+        # ✅ CRITICAL FIX: Force HTTPS in Location headers from redirects
+        http_scheme = "http://"
+        https_scheme = "https://"
+        if "Location" in response.headers:
+            location = response.headers["Location"]
+            if location.startswith(http_scheme):
+                logger.warning(f"🔧 Fixing HTTP redirect to HTTPS: {location}")
+                response.headers["Location"] = location.replace(http_scheme, https_scheme, 1)
+
+        # ✅ CRITICAL FIX: Add CORS headers to ALL responses including redirects
+        # This prevents CORS issues with redirect responses
+        if "Access-Control-Allow-Origin" not in response.headers:
+            cors_origins = settings.cors_origins_list
+            allow_all_origins = "*" in cors_origins
+            if allow_all_origins:
+                response.headers["Access-Control-Allow-Origin"] = "*"
+            else:
+                # For specific origins, we need to handle this more carefully
+                origin = request.headers.get("Origin", "")
+                if origin in cors_origins:
+                    response.headers["Access-Control-Allow-Origin"] = origin
+                    response.headers["Vary"] = "Origin"
+
+        # Add CORS headers for allowed methods and headers
+        if "Access-Control-Allow-Methods" not in response.headers:
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        if "Access-Control-Allow-Headers" not in response.headers:
+            response.headers["Access-Control-Allow-Headers"] = "*"
+        if "Access-Control-Allow-Credentials" not in response.headers:
+            response.headers["Access-Control-Allow-Credentials"] = "true"
 
         # Add strict security headers to ALL responses
         response.headers["Strict-Transport-Security"] = (

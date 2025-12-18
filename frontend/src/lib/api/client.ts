@@ -51,6 +51,10 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Enable automatic redirect following
+  maxRedirects: 5,
+  // Allow credentials for CORS
+  withCredentials: true,
 });
 
 // Request interceptor
@@ -70,6 +74,11 @@ api.interceptors.request.use(
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      
+      // Add Origin header for CORS
+      if (config.headers) {
+        config.headers.Origin = globalThis.window.location.origin;
+      }
     }
     return config;
   },
@@ -78,16 +87,36 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle auth errors
+// Response interceptor to handle auth errors and CORS redirects
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     if (error.response?.status === 401) {
       if (globalThis.window !== undefined) {
         globalThis.localStorage.removeItem('access_token');
         globalThis.location.href = '/login';
       }
     }
+    
+    // Handle 307 redirect specifically for CORS issues
+    if (error.response?.status === 307 && error.response.headers?.location) {
+      const redirectUrl = error.response.headers.location;
+      console.log('API Client - Following 307 redirect:', redirectUrl);
+      
+      try {
+        // Create a new request with the redirect URL
+        const originalRequest = error.config;
+        const redirectResponse = await api(redirectUrl, {
+          ...originalRequest,
+          url: redirectUrl,
+        });
+        return redirectResponse;
+      } catch (redirectError) {
+        console.error('API Client - Redirect failed:', redirectError);
+        return Promise.reject(redirectError);
+      }
+    }
+    
     return Promise.reject(error);
   }
 );
