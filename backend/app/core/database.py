@@ -21,7 +21,7 @@ engine = create_async_engine(
     pool_size=10,  # Appropriate pool size for serverless
     max_overflow=20,  # Allow some overflow
     connect_args={
-        "sslmode": "require",
+        "ssl": "require",  # asyncpg uses 'ssl' not 'sslmode'
         "application_name": "budget-backend",
         "connect_timeout": 10,
     }
