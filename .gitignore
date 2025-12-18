@@ -90,6 +90,9 @@ Thumbs.db
 # Technical documentation (keep for reference)
 TECHNICAL_ISSUES_SUMMARY.md
 
+# Scripts directory
+scripts/
+
 # Playwright test files
 tests/
 playwright-report/
