@@ -24,8 +24,31 @@ class ChildExpenseService:
         self.db = db
 
     async def create(self, data: ChildExpenseCreate) -> ChildExpense:
-        """Create a new child expense."""
-        expense = ChildExpense(**data.model_dump())
+        """Create a new child expense and automatically associate with monthly budget."""
+        # If no budget_id provided, try to find the appropriate monthly budget
+        if data.budget_id is None:
+            # Find the budget for the month/year of the expense
+            budget_result = await self.db.execute(
+                select(ChildMonthlyBudget).where(
+                    ChildMonthlyBudget.user_id == data.user_id,
+                    ChildMonthlyBudget.year == data.purchase_date.year,
+                    ChildMonthlyBudget.month == data.purchase_date.month,
+                )
+            )
+            budget = budget_result.scalar_one_or_none()
+
+            if budget:
+                # Associate expense with the found budget
+                expense_data = data.model_dump()
+                expense_data["budget_id"] = budget.id
+                expense = ChildExpense(**expense_data)
+            else:
+                # No budget found for this month, create expense without budget association
+                expense = ChildExpense(**data.model_dump())
+        else:
+            # Use the provided budget_id
+            expense = ChildExpense(**data.model_dump())
+
         self.db.add(expense)
         await self.db.commit()
         await self.db.refresh(expense)
@@ -97,7 +120,7 @@ class ChildExpenseService:
     async def get_summary(
         self, user_id: int, month: int | None = None, year: int | None = None
     ) -> ChildExpenseSummary:
-        """Get expense summary for a child user including budget tracking."""
+        """Get expense summary for a child user including budget tracking with carryover support."""
         # Get user
         user_result = await self.db.execute(select(User).where(User.id == user_id))
         user = user_result.scalar_one_or_none()
@@ -130,29 +153,52 @@ class ChildExpenseService:
 
         # Get monthly budget for the specified month/year (if it exists)
         budget_result = await self.db.execute(
-            select(ChildMonthlyBudget.budget_amount).where(
+            select(ChildMonthlyBudget).where(
                 ChildMonthlyBudget.user_id == user_id,
                 ChildMonthlyBudget.year == year,
                 ChildMonthlyBudget.month == month,
             )
         )
-        monthly_budget = budget_result.scalar_one_or_none()
+        monthly_budget_record = budget_result.scalar_one_or_none()
 
-        # If no specific monthly budget, fall back to user.monthly_budget (for backward compatibility)
-        if monthly_budget is None:
+        # Calculate available budget (base budget + carryover)
+        monthly_budget = None
+        carryover_amount = Decimal("0.00")
+        is_exceptional = False
+
+        if monthly_budget_record:
+            monthly_budget = monthly_budget_record.budget_amount
+            carryover_amount = monthly_budget_record.carryover_amount
+            is_exceptional = monthly_budget_record.is_exceptional
+        elif user.monthly_budget:
+            # Fallback to user's default monthly budget for backward compatibility
             monthly_budget = user.monthly_budget
+
+        # Calculate total available budget (base + carryover)
+        total_available_budget = None
+        if monthly_budget:
+            total_available_budget = monthly_budget + carryover_amount
 
         # Calculate remaining budget
         remaining_budget = None
-        if monthly_budget:
-            remaining_budget = monthly_budget - total_spent
+        if total_available_budget:
+            remaining_budget = total_available_budget - total_spent
+
+        # Calculate carryover to next month (if remaining budget is positive)
+        carryover_to_next = None
+        if remaining_budget and remaining_budget > 0:
+            carryover_to_next = remaining_budget
 
         return ChildExpenseSummary(
             user_id=user.id,
             username=user.username,
             monthly_budget=monthly_budget,
+            carryover_amount=carryover_amount,
+            total_available_budget=total_available_budget,
             total_spent=total_spent,
             remaining_budget=remaining_budget,
+            carryover_to_next=carryover_to_next,
+            is_exceptional=is_exceptional,
             expense_count=expense_count,
             current_month=f"{year}-{month:02d}",
         )

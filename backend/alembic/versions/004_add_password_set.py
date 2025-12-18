@@ -1,7 +1,7 @@
 """add password_set field to users
 
-Revision ID: add_password_set
-Revises: add_recurring_charges
+Revision ID: 004_add_password_set
+Revises: 003_add_recurring_charges
 Create Date: 2024-01-20
 
 """
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "add_password_set"
-down_revision: str | None = "add_recurring_charges"
+revision: str = "004_add_password_set"
+down_revision: str | None = "003_add_recurring_charges"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

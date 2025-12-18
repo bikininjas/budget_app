@@ -14,12 +14,13 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "upgrade-insecure-requests; block-all-mixed-content; default-src 'self' https:; connect-src 'self' http://localhost:8000 http://localhost:8001 https://backend-budget.novacat.fr https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://r2cdn.perplexity.ai;",
+            value: "default-src 'self' https:; connect-src 'self' http://localhost:8000 http://localhost:8001 https://backend-budget.novacat.fr https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://r2cdn.perplexity.ai;",
           },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
-          },
+          // Remove HSTS for development to allow HTTP
+          // {
+          //   key: 'Strict-Transport-Security',
+          //   value: 'max-age=31536000; includeSubDomains',
+          // },
         ],
       },
     ];

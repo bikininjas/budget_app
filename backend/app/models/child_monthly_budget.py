@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -23,6 +23,9 @@ class ChildMonthlyBudget(Base):
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     month: Mapped[int] = mapped_column(Integer, nullable=False)  # 1-12
     budget_amount: Mapped[object] = mapped_column(Numeric(12, 2), nullable=False)
+    carryover_amount: Mapped[object] = mapped_column(Numeric(12, 2), nullable=False, default=0.00)
+    is_exceptional: Mapped[bool] = mapped_column(default=False)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
@@ -35,6 +38,9 @@ class ChildMonthlyBudget(Base):
 
     # Relationships
     user: Mapped["User"] = relationship("User")  # noqa: F821
+    expenses: Mapped[list["ChildExpense"]] = relationship(  # noqa: F821
+        "ChildExpense", back_populates="budget", cascade="all, delete-orphan"
+    )
 
     # Unique constraint: only one budget per user per month
     __table_args__ = (UniqueConstraint("user_id", "year", "month", name="uq_user_month_budget"),)

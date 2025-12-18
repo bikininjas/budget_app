@@ -1,7 +1,7 @@
 """add recurring_charges table
 
-Revision ID: add_recurring_charges
-Revises: add_is_recurring
+Revision ID: 003_add_recurring_charges
+Revises: 002_add_is_recurring
 Create Date: 2024-12-04
 
 """
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "add_recurring_charges"
-down_revision: str | None = "add_is_recurring"
+revision: str = "003_add_recurring_charges"
+down_revision: str | None = "002_add_is_recurring"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

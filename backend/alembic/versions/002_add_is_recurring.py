@@ -1,6 +1,6 @@
 """add is_recurring to expenses
 
-Revision ID: add_is_recurring
+Revision ID: 002_add_is_recurring
 Revises: 001_initial_schema_and_seed
 Create Date: 2024-12-04
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "add_is_recurring"
+revision: str = "002_add_is_recurring"
 down_revision: str | None = "001_initial_schema_and_seed"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

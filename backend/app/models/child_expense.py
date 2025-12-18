@@ -31,6 +31,9 @@ class ChildExpense(Base):
 
     # Foreign Keys
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    budget_id: Mapped[int | None] = mapped_column(
+        ForeignKey("child_monthly_budgets.id", ondelete="SET NULL"), nullable=True, default=None
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
@@ -44,6 +47,9 @@ class ChildExpense(Base):
     # Relationships
     user: Mapped["User"] = relationship(  # noqa: F821
         "User", back_populates="child_expenses"
+    )
+    budget: Mapped["ChildMonthlyBudget"] = relationship(  # noqa: F821
+        "ChildMonthlyBudget", back_populates="expenses"
     )
 
     def __repr__(self) -> str:

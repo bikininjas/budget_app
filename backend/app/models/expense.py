@@ -51,7 +51,9 @@ class Expense(Base):
     # Foreign Keys
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), nullable=False)
-    assigned_to: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)  # NULL = dépense commune
+    assigned_to: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )  # NULL = dépense commune
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"), nullable=True)
 

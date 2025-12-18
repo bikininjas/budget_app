@@ -1,7 +1,7 @@
 """make expense assigned_to nullable for common expenses
 
-Revision ID: make_assigned_to_nullable
-Revises: add_child_user_and_expenses
+Revision ID: 006_make_assigned_to_nullable
+Revises: 005_add_child_user_and_expenses
 Create Date: 2024-12-06
 
 """
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "make_assigned_to_nullable"
-down_revision: str | None = "add_child_user_and_expenses"
+revision: str = "006_make_assigned_to_nullable"
+down_revision: str | None = "005_add_child_user_and_expenses"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

@@ -1,7 +1,7 @@
 """add child_monthly_budgets table for monthly budget tracking
 
-Revision ID: add_child_monthly_budgets
-Revises: make_assigned_to_nullable
+Revision ID: 007_add_child_monthly_budgets
+Revises: 006_make_assigned_to_nullable
 Create Date: 2025-01-10
 
 """
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "add_child_monthly_budgets"
-down_revision: str | None = "make_assigned_to_nullable"
+revision: str = "007_add_child_monthly_budgets"
+down_revision: str | None = "006_make_assigned_to_nullable"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -34,7 +34,9 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_id", "year", "month", name="uq_user_month_budget"),
     )
-    op.create_index(op.f("ix_child_monthly_budgets_id"), "child_monthly_budgets", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_child_monthly_budgets_id"), "child_monthly_budgets", ["id"], unique=False
+    )
 
 
 def downgrade() -> None:

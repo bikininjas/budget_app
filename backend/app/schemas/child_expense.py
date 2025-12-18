@@ -24,6 +24,10 @@ class ChildExpenseCreate(ChildExpenseBase):
     """Schema for creating a child expense."""
 
     user_id: int = Field(..., description="ID of the child user")
+    budget_id: int | None = Field(
+        None,
+        description="Optional budget ID to associate this expense with a specific monthly budget",
+    )
 
 
 class ChildExpenseUpdate(BaseModel):
@@ -43,17 +47,22 @@ class ChildExpenseResponse(ChildExpenseBase):
 
     id: int
     user_id: int
+    budget_id: int | None
     created_at: datetime
     updated_at: datetime
 
 
 class ChildExpenseSummary(BaseModel):
-    """Summary of child expenses for budget tracking."""
+    """Summary of child expenses for budget tracking with carryover support."""
 
     user_id: int
     username: str
     monthly_budget: Decimal | None
+    carryover_amount: Decimal
+    total_available_budget: Decimal | None
     total_spent: Decimal
     remaining_budget: Decimal | None
+    carryover_to_next: Decimal | None
+    is_exceptional: bool
     expense_count: int
     current_month: str  # Format: "YYYY-MM"

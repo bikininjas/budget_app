@@ -23,7 +23,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # ✅ SOLUTION RADICALE: Plus de NEXT_PUBLIC_API_URL
 # Le frontend détecte automatiquement l'URL selon le hostname
 # Production = https://backend-budget.novacat.fr (hardcodé)
-# Local = http://localhost:8001 (hardcodé)
+# Local = http://localhost:8000 (hardcodé)
 
 RUN bun run build
 

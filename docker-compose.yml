@@ -28,7 +28,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
     ports:
-      - "0.0.0.0:${BACKEND_PORT:-8001}:8000"
+      - "0.0.0.0:${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -45,10 +45,10 @@ services:
     container_name: budget_frontend
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8001}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
       HOSTNAME: 0.0.0.0
     ports:
-      - "0.0.0.0:${FRONTEND_PORT:-3001}:3000"
+      - "0.0.0.0:${FRONTEND_PORT:-3000}:3000"
     depends_on:
       - backend
 

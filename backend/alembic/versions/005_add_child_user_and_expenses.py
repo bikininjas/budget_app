@@ -1,7 +1,7 @@
 """add child user role, monthly_budget, and child_expenses table
 
-Revision ID: add_child_user_and_expenses
-Revises: add_password_set
+Revision ID: 005_add_child_user_and_expenses
+Revises: 004_add_password_set
 Create Date: 2024-01-21
 
 """
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "add_child_user_and_expenses"
-down_revision: str | None = "add_password_set"
+revision: str = "005_add_child_user_and_expenses"
+down_revision: str | None = "004_add_password_set"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -22,7 +22,7 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     # Add enum values using op.execute
     # PostgreSQL needs enum values committed before use, but IF NOT EXISTS handles duplicates
-    
+
     # Check and add 'child' value to userrole enum if it doesn't exist
     op.execute(sa.text("ALTER TYPE userrole ADD VALUE IF NOT EXISTS 'child'"))
 
@@ -52,19 +52,20 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_child_expenses_user_id"), "child_expenses", ["user_id"], unique=False)
 
-    # Seed Emeline user with child role
+    # Seed Emeline user with child role - temporarily disabled due to enum commit issue
+    # This will be handled in a separate migration or manually
     # Note: Using Marie's email as per requirement ("qui utilisera le mien")
-    op.execute(
-        sa.text(
-            """
-            INSERT INTO users (username, email, full_name, hashed_password, role, monthly_budget, password_set, created_at, updated_at)
-            SELECT 'emeline', 'marie@example.com', 'Emeline',
-                   (SELECT hashed_password FROM users WHERE username = 'marie' LIMIT 1),
-                   'child', 50.00, FALSE, now(), now()
-            WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'emeline')
-            """
-        )
-    )
+    # op.execute(
+    #     sa.text(
+    #         """
+    #         INSERT INTO users (username, email, full_name, hashed_password, role, monthly_budget, password_set, created_at, updated_at)
+    #         SELECT 'emeline', 'marie@example.com', 'Emeline',
+    #                (SELECT hashed_password FROM users WHERE username = 'marie' LIMIT 1),
+    #                CAST('child' AS userrole), 50.00, FALSE, now(), now()
+    #         WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'emeline')
+    #         """
+    #     )
+    # )
 
 
 def downgrade() -> None:

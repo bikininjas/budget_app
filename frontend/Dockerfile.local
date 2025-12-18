@@ -18,8 +18,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
-# Set API URL at build time - will be replaced by hostname detection in client
-ENV NEXT_PUBLIC_API_URL http://localhost:8001
+
+# Copier le fichier .env.local pour que Next.js puisse lire les variables d'environnement
+# Cela permet d'injecter correctement NEXT_PUBLIC_API_URL au moment du build
+COPY .env.local .env.local
 
 RUN bun run build
 
