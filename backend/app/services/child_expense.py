@@ -132,9 +132,10 @@ class ChildExpenseService:
         except Exception as e:
             # Log the error and return a safe default response
             from app.core.config import settings
-            if hasattr(settings, 'debug') and settings.debug:
+
+            if hasattr(settings, "debug") and settings.debug:
                 print(f"Error in get_summary: {str(e)}")
-            
+
             # Return default values to prevent 500 errors
             return ChildExpenseSummary(
                 user_id=user_id,

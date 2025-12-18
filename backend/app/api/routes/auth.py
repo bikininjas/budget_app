@@ -1,13 +1,10 @@
 """Authentication routes."""
 
 import logging
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, HTTPException, status
 
 from app.api.deps import CurrentUser, DbSession
-from app.schemas.user import UserLogin
 from app.core.config import settings
 from app.core.security import (
     create_access_token,
@@ -22,6 +19,7 @@ from app.schemas.user import (
     SetInitialPassword,
     Token,
     UserCreate,
+    UserLogin,
     UserPasswordStatus,
     UserResponse,
 )

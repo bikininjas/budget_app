@@ -4,10 +4,13 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_db
 from app.api.routes import (
     accounts,
     auth,
@@ -85,7 +88,7 @@ def create_application() -> FastAPI:
     # Configure CORS with explicit settings for production
     cors_origins = settings.cors_origins_list
     allow_all_origins = "*" in cors_origins and len(cors_origins) == 1
-    
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"] if allow_all_origins else cors_origins,
@@ -121,11 +124,13 @@ def create_application() -> FastAPI:
 
         # Simple HTTP to HTTPS redirect for non-Cloud-Run environments
         if forwarded_proto == "http" and "cloudrun.app" not in host:
-            logger.warning(f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}")
+            logger.warning(
+                f"🚨 HTTP request detected! Forcing HTTPS redirect for {request.url.path}"
+            )
             http_scheme = "http://"
             https_scheme = "https://"
             url = str(request.url).replace(http_scheme, https_scheme, 1)
-            
+
             # Add CORS headers to the redirect response
             cors_origins = request.app.state.cors_origins
             allow_all_origins = request.app.state.allow_all_origins
@@ -137,7 +142,7 @@ def create_application() -> FastAPI:
                 if origin in cors_origins:
                     headers["Access-Control-Allow-Origin"] = origin
                     headers["Vary"] = "Origin"
-            
+
             return JSONResponse(
                 status_code=status.HTTP_308_PERMANENT_REDIRECT,
                 headers=headers,
@@ -170,7 +175,7 @@ def create_application() -> FastAPI:
         response.headers["Content-Security-Policy"] = (
             "upgrade-insecure-requests; block-all-mixed-content"
         )
-        
+
         # Ensure CORS headers are present on all responses (not just preflight)
         cors_origins = request.app.state.cors_origins
         allow_all_origins = request.app.state.allow_all_origins
@@ -249,37 +254,39 @@ def create_application() -> FastAPI:
         return {"status": "healthy", "version": settings.app_version}
 
     @app.get("/api/db-health")
-    async def db_health_check(db: DbSession) -> dict:
+    async def db_health_check(db: AsyncSession = Depends(get_db)) -> dict:
         """Database health check endpoint."""
         try:
             # Test basic database connectivity
-            result = await db.execute("SELECT 1")
+            await db.execute(text("SELECT 1"))
             db_status = "connected"
-            
+
             # Test if required tables exist
             tables_to_check = ["users", "child_expenses", "child_monthly_budgets"]
             missing_tables = []
-            
+
             for table in tables_to_check:
                 try:
-                    await db.execute(f"SELECT 1 FROM {table} LIMIT 1")
+                    await db.execute(text(f"SELECT 1 FROM {table} LIMIT 1"))
                 except Exception:
                     missing_tables.append(table)
-            
-            table_status = "all_present" if not missing_tables else f"missing: {', '.join(missing_tables)}"
-            
+
+            table_status = (
+                "all_present" if not missing_tables else f"missing: {', '.join(missing_tables)}"
+            )
+
             return {
                 "status": "healthy",
                 "database": db_status,
                 "tables": table_status,
-                "version": settings.app_version
+                "version": settings.app_version,
             }
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "database": "disconnected",
                 "error": str(e),
-                "version": settings.app_version
+                "version": settings.app_version,
             }
 
     return app

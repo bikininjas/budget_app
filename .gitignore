@@ -83,16 +83,12 @@ logs/
 .DS_Store
 Thumbs.db
 
-
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 
 # Ignore all markdown files except root README.md
 **/*.md
 !/README.md
-
-# Technical documentation (keep for reference)
-TECHNICAL_ISSUES_SUMMARY.md
 
 # Scripts directory
 scripts/
@@ -108,4 +104,3 @@ test-results/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
-issues/backend_deployment_issues.md

@@ -13,13 +13,15 @@ engine = create_async_engine(
     echo=settings.debug,
     pool_pre_ping=True,
     pool_recycle=3600,  # Recycle connections every hour
-    pool_size=10,       # Appropriate pool size for serverless
-    max_overflow=20,    # Allow some overflow
+    pool_size=10,  # Appropriate pool size for serverless
+    max_overflow=20,  # Allow some overflow
     connect_args={
         "sslmode": "require",
         "application_name": "budget-backend",
         "connect_timeout": 10,
-    } if "neon.tech" in settings.database_url else {},
+    }
+    if "neon.tech" in settings.database_url
+    else {},
 )
 
 AsyncSessionLocal = async_sessionmaker(
@@ -44,7 +46,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             # Test database connection before yielding
             if "neon.tech" in settings.database_url:
                 await session.execute("SELECT 1")  # Simple query to test connection
-            
+
             yield session
             await session.commit()
         except Exception as e:
