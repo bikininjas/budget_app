@@ -87,6 +87,10 @@ Thumbs.db
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 
+# Ignore all markdown files except root README.md
+**/*.md
+!/README.md
+
 # Technical documentation (keep for reference)
 TECHNICAL_ISSUES_SUMMARY.md
 

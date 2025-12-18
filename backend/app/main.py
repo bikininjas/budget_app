@@ -82,42 +82,26 @@ def create_application() -> FastAPI:
         redirect_slashes=True,
     )
 
-    # Configure CORS - Support wildcard for network access
+    # Configure CORS with explicit settings for production
     cors_origins = settings.cors_origins_list
     allow_all_origins = "*" in cors_origins and len(cors_origins) == 1
+    
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"] if allow_all_origins else cors_origins,
-        allow_credentials=not allow_all_origins,  # Can't use credentials with wildcard
-        allow_methods=["*"],
-        allow_headers=["Content-Type", "Authorization", "Origin", "X-Requested-With", "Accept"],
+        allow_credentials=True,  # Always allow credentials for authenticated requests
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["*"],  # Allow all headers including Authorization
+        expose_headers=["Content-Length"],
+        max_age=86400,  # 24 hours cache for preflight
     )
 
-    # OPTIONS request handler for CORS preflight
-    @app.middleware("http")
-    async def handle_options_request(request: Request, call_next):
-        """Handle OPTIONS requests for CORS preflight."""
-        if request.method == "OPTIONS":
-            # Add CORS headers for preflight requests
-            response = JSONResponse(status_code=200, content={"message": "OK"})
-            
-            # Add CORS headers
-            if allow_all_origins:
-                response.headers["Access-Control-Allow-Origin"] = "*"
-            else:
-                origin = request.headers.get("Origin", "")
-                if origin in cors_origins:
-                    response.headers["Access-Control-Allow-Origin"] = origin
-                    response.headers["Vary"] = "Origin"
-                    response.headers["Access-Control-Allow-Credentials"] = "true"
-            
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Origin, X-Requested-With, Accept"
-            response.headers["Access-Control-Max-Age"] = "86400"
-            
-            return response
-        
-        return await call_next(request)
+    # Note: Removed custom OPTIONS handler to let CORSMiddleware handle preflight requests
+    # This prevents interference with standard CORS behavior
+
+    # Make CORS variables available to middleware functions
+    app.state.cors_origins = cors_origins
+    app.state.allow_all_origins = allow_all_origins
 
     # HTTPS redirect middleware (force HTTPS in production)
     @app.middleware("http")
@@ -143,8 +127,8 @@ def create_application() -> FastAPI:
             url = str(request.url).replace(http_scheme, https_scheme, 1)
             
             # Add CORS headers to the redirect response
-            cors_origins = settings.cors_origins_list
-            allow_all_origins = "*" in cors_origins
+            cors_origins = request.app.state.cors_origins
+            allow_all_origins = request.app.state.allow_all_origins
             headers = {"Location": url}
             if allow_all_origins:
                 headers["Access-Control-Allow-Origin"] = "*"
@@ -186,6 +170,16 @@ def create_application() -> FastAPI:
         response.headers["Content-Security-Policy"] = (
             "upgrade-insecure-requests; block-all-mixed-content"
         )
+        
+        # Ensure CORS headers are present on all responses (not just preflight)
+        cors_origins = request.app.state.cors_origins
+        allow_all_origins = request.app.state.allow_all_origins
+        if not allow_all_origins:
+            origin = request.headers.get("Origin", "")
+            if origin in cors_origins:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Vary"] = "Origin"
+                response.headers["Access-Control-Allow-Credentials"] = "true"
 
         logger.info(f"📤 RESPONSE: {response.status_code} for {request.url.path}")
         return response
@@ -253,6 +247,40 @@ def create_application() -> FastAPI:
     async def health_check() -> dict:
         """Health check endpoint."""
         return {"status": "healthy", "version": settings.app_version}
+
+    @app.get("/api/db-health")
+    async def db_health_check(db: DbSession) -> dict:
+        """Database health check endpoint."""
+        try:
+            # Test basic database connectivity
+            result = await db.execute("SELECT 1")
+            db_status = "connected"
+            
+            # Test if required tables exist
+            tables_to_check = ["users", "child_expenses", "child_monthly_budgets"]
+            missing_tables = []
+            
+            for table in tables_to_check:
+                try:
+                    await db.execute(f"SELECT 1 FROM {table} LIMIT 1")
+                except Exception:
+                    missing_tables.append(table)
+            
+            table_status = "all_present" if not missing_tables else f"missing: {', '.join(missing_tables)}"
+            
+            return {
+                "status": "healthy",
+                "database": db_status,
+                "tables": table_status,
+                "version": settings.app_version
+            }
+        except Exception as e:
+            return {
+                "status": "unhealthy",
+                "database": "disconnected",
+                "error": str(e),
+                "version": settings.app_version
+            }
 
     return app
 
