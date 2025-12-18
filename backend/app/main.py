@@ -84,11 +84,11 @@ def create_application() -> FastAPI:
 
     # Configure CORS - Support wildcard for network access
     cors_origins = settings.cors_origins_list
-    allow_all_origins = "*" in cors_origins
+    allow_all_origins = "*" in cors_origins and len(cors_origins) == 1
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"] if allow_all_origins else cors_origins,
-        allow_credentials=True,  # Always allow credentials for authenticated requests
+        allow_credentials=not allow_all_origins,  # Can't use credentials with wildcard
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -109,15 +109,11 @@ def create_application() -> FastAPI:
                 if origin in cors_origins:
                     response.headers["Access-Control-Allow-Origin"] = origin
                     response.headers["Vary"] = "Origin"
+                    response.headers["Access-Control-Allow-Credentials"] = "true"
             
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
             response.headers["Access-Control-Allow-Headers"] = "*"
             response.headers["Access-Control-Max-Age"] = "86400"
-            
-            # Always allow credentials for authenticated requests
-            # Note: When using specific origins (not wildcard), credentials are allowed
-            if not allow_all_origins:
-                response.headers["Access-Control-Allow-Credentials"] = "true"
             
             return response
         
