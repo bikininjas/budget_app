@@ -92,11 +92,11 @@ def create_application() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"] if allow_all_origins else cors_origins,
-        allow_credentials=True,  # Always allow credentials for authenticated requests
-        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["*"],  # Allow all headers including Authorization
-        expose_headers=["Content-Length"],
-        max_age=86400,  # 24 hours cache for preflight
+        allow_credentials=True,
+        allow_methods=["*"],  # Allow all methods
+        allow_headers=["*"],  # Allow all headers
+        expose_headers=["Content-Length", "WWW-Authenticate"],  # Expose useful headers
+        max_age=86400,
     )
 
     # Note: Removed custom OPTIONS handler to let CORSMiddleware handle preflight requests
@@ -110,17 +110,33 @@ def create_application() -> FastAPI:
     @app.middleware("http")
     async def force_https_redirect(request: Request, call_next):
         """Force HTTPS redirect and add security headers."""
-        # Log ALL requests with full details
+        # Log ALL requests with comprehensive debug details
         forwarded_proto = request.headers.get("X-Forwarded-Proto", "")
         forwarded_for = request.headers.get("X-Forwarded-For", "")
         host = request.headers.get("Host", "")
         referer = request.headers.get("Referer", "")
+        origin = request.headers.get("Origin", "")
+        user_agent = request.headers.get("User-Agent", "")
 
+        # Log request details for debugging
         logger.info(
             f"📥 REQUEST: {request.method} {request.url.path} | "
             f"Host={host} | Proto={forwarded_proto} | "
-            f"IP={forwarded_for} | Referer={referer}"
+            f"IP={forwarded_for} | Origin={origin} | "
+            f"Referer={referer} | UA={user_agent[:50]}..."
         )
+
+        # Debug log for CORS-related requests
+        if origin:
+            logger.debug(f"🔄 CORS: Origin={origin}, Method={request.method}, Path={request.url.path}")
+
+        # Log all headers for maximum debugging
+        if settings.debug:
+            headers_dict = dict(request.headers)
+            # Remove sensitive headers from debug logs
+            safe_headers = {k: v for k, v in headers_dict.items()
+                          if k.lower() not in ['authorization', 'cookie', 'x-api-key']}
+            logger.debug(f"📋 HEADERS: {safe_headers}")
 
         # Simple HTTP to HTTPS redirect for non-Cloud-Run environments
         if forwarded_proto == "http" and "cloudrun.app" not in host:
@@ -176,18 +192,49 @@ def create_application() -> FastAPI:
             "upgrade-insecure-requests; block-all-mixed-content"
         )
 
-        # Ensure CORS headers are present on all responses (not just preflight)
+        # Ensure CORS headers are present on ALL responses including errors
+        # This is a fallback for cases where CORSMiddleware doesn't handle the response
         cors_origins = request.app.state.cors_origins
         allow_all_origins = request.app.state.allow_all_origins
-        if not allow_all_origins:
-            origin = request.headers.get("Origin", "")
-            if origin in cors_origins:
-                response.headers["Access-Control-Allow-Origin"] = origin
-                response.headers["Vary"] = "Origin"
-                response.headers["Access-Control-Allow-Credentials"] = "true"
 
-        logger.info(f"📤 RESPONSE: {response.status_code} for {request.url.path}")
+        # Only add CORS headers if not already present (avoid duplication)
+        if not response.headers.get("Access-Control-Allow-Origin"):
+            if allow_all_origins:
+                response.headers["Access-Control-Allow-Origin"] = "*"
+            else:
+                origin = request.headers.get("Origin", "")
+                if origin in cors_origins:
+                    response.headers["Access-Control-Allow-Origin"] = origin
+                    response.headers["Vary"] = "Origin"
+                    response.headers["Access-Control-Allow-Credentials"] = "true"
+
+        # Log response details including CORS headers for debugging
+        cors_header = response.headers.get("Access-Control-Allow-Origin", "None")
+        content_type = response.headers.get("content-type", "None")
+        logger.info(
+            f"📤 RESPONSE: {response.status_code} for {request.url.path} | "
+            f"CORS={cors_header} | Content-Type={content_type}"
+        )
+
+        # Debug log for error responses
+        if response.status_code >= 400:
+            logger.debug(
+                f"⚠️  ERROR RESPONSE: {response.status_code} {request.url.path} | "
+                f"CORS={cors_header}, Content-Type={content_type}"
+            )
+            # Log response content for debugging (in development only)
+            if settings.debug and response.status_code >= 400:
+                try:
+                    response_body = response.body.decode('utf-8') if response.body else 'No body'
+                    logger.debug(f"📄 ERROR BODY: {response_body[:500]}")  # Limit to 500 chars
+                except Exception as e:
+                    logger.debug(f"Could not log response body: {str(e)}")
+
         return response
+
+    # Note: Removed custom HTTPException handler
+    # FastAPI's CORSMiddleware handles most CORS scenarios automatically
+    # For edge cases, we rely on the response middleware below
 
     # IP and Referer filtering middleware (security layer)
     @app.middleware("http")

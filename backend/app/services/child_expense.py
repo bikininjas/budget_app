@@ -121,12 +121,18 @@ class ChildExpenseService:
         self, user_id: int, month: int | None = None, year: int | None = None
     ) -> ChildExpenseSummary:
         """Get expense summary for a child user including budget tracking with carryover support."""
+        import logging
+        logger = logging.getLogger(__name__)
+
+        logger.debug(f"📊 Generating summary for user {user_id}, month {month}, year {year}")
         try:
             # Get user
+            logger.debug(f"👤 Looking up user {user_id}")
             user_result = await self.db.execute(select(User).where(User.id == user_id))
             user = user_result.scalar_one_or_none()
 
             if not user:
+                logger.warn(f"⚠️  User not found: {user_id}")
                 raise ValueError(f"User {user_id} not found")
 
         except Exception as e:
