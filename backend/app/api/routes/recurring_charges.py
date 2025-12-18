@@ -58,7 +58,7 @@ def _build_charge_response(
     )
 
 
-@router.get("/", response_model=list[RecurringChargeResponse])
+@router.get("", response_model=list[RecurringChargeResponse])
 async def list_recurring_charges(
     db: DbSession,
     _current_user: CurrentUser,

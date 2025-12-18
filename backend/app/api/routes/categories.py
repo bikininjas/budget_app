@@ -9,7 +9,7 @@ from app.services.category import CategoryService
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
 
-@router.get("/", response_model=list[CategoryResponse])
+@router.get("", response_model=list[CategoryResponse])
 async def list_categories(
     db: DbSession,
     _current_user: CurrentUser,

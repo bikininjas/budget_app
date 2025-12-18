@@ -78,8 +78,8 @@ def create_application() -> FastAPI:
         redoc_url=REDOC_URL,
         openapi_url=OPENAPI_URL,
         lifespan=lifespan,
-        # Disable automatic slash redirect to prevent CORS issues
-        redirect_slashes=False,
+        # Enable automatic slash redirect for better compatibility
+        redirect_slashes=True,
     )
 
     # Configure CORS - Support wildcard for network access

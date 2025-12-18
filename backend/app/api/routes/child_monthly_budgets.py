@@ -43,7 +43,7 @@ async def set_monthly_budget(
     return ChildMonthlyBudgetResponse.model_validate(budget)
 
 
-@router.get("/", response_model=list[ChildMonthlyBudgetResponse])
+@router.get("", response_model=list[ChildMonthlyBudgetResponse])
 async def get_user_budgets(
     db: DbSession,
     current_user: CurrentUser,

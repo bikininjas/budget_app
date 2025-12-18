@@ -9,7 +9,7 @@ from app.services.account import AccountService
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
 
-@router.get("/", response_model=list[AccountResponse])
+@router.get("", response_model=list[AccountResponse])
 async def list_accounts(
     db: DbSession,
     current_user: CurrentUser,

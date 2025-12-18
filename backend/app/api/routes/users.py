@@ -9,7 +9,7 @@ from app.services.user import UserService
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/", response_model=list[UserResponse])
+@router.get("", response_model=list[UserResponse])
 async def list_users(
     db: DbSession,
     _current_user: CurrentUser,

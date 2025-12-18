@@ -15,7 +15,7 @@ from app.services.project import ProjectService
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
-@router.get("/", response_model=list[ProjectResponse])
+@router.get("", response_model=list[ProjectResponse])
 async def list_projects(
     db: DbSession,
     _current_user: CurrentUser,

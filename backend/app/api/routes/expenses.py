@@ -67,7 +67,7 @@ class RecurringBudgetResponse(BaseModel):
     by_category: list[dict]
 
 
-@router.get("/", response_model=list[ExpenseResponse])
+@router.get("", response_model=list[ExpenseResponse])
 async def list_expenses(
     db: DbSession,
     _current_user: CurrentUser,

@@ -49,7 +49,7 @@ async def create_expense(
     return ChildExpenseResponse.model_validate(expense)
 
 
-@router.get("/", response_model=list[ChildExpenseResponse])
+@router.get("", response_model=list[ChildExpenseResponse])
 async def get_expenses(
     db: DbSession,
     current_user: CurrentUser,
