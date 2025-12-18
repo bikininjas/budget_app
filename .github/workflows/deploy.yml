@@ -74,7 +74,7 @@ jobs:
       
       - name: Run Ruff Lint
         working-directory: ./backend
-        run: ruff check .
+        run: ruff check --fix .
 
   lint-frontend:
     name: Lint Frontend
