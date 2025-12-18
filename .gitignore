@@ -104,3 +104,4 @@ test-results/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+issues/backend_deployment_issues.md
