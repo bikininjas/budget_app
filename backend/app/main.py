@@ -90,7 +90,7 @@ def create_application() -> FastAPI:
         allow_origins=["*"] if allow_all_origins else cors_origins,
         allow_credentials=not allow_all_origins,  # Can't use credentials with wildcard
         allow_methods=["*"],
-        allow_headers=["*"],
+        allow_headers=["Content-Type", "Authorization", "Origin", "X-Requested-With", "Accept"],
     )
 
     # OPTIONS request handler for CORS preflight
@@ -112,7 +112,7 @@ def create_application() -> FastAPI:
                     response.headers["Access-Control-Allow-Credentials"] = "true"
             
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Origin, X-Requested-With, Accept"
             response.headers["Access-Control-Max-Age"] = "86400"
             
             return response
