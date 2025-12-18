@@ -21,12 +21,10 @@ engine = create_async_engine(
     pool_size=10,  # Appropriate pool size for serverless
     max_overflow=20,  # Allow some overflow
     connect_args={
-        "ssl": "require",  # asyncpg uses 'ssl' not 'sslmode'
+        "ssl": True,  # asyncpg uses boolean ssl, not sslmode string
         "application_name": "budget-backend",
         "connect_timeout": 10,
-    }
-    if "neon.tech" in settings.database_url
-    else {},
+    } if "neon.tech" in settings.database_url else {},
 )
 
 AsyncSessionLocal = async_sessionmaker(
